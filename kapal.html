@@ -1,27 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>SIMPAN – Identitas Kapal</title>
+<style>
+body{font-family:Arial;background:#f4f6f8;margin:0;padding:20px}
+.container{max-width:600px;margin:auto;background:#fff;padding:15px;border-radius:10px}
+hr{margin:15px 0}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>SIMPAN</h2>
+<div id="data">Memuat data kapal...</div>
+</div>
+
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
 
 fetch(SHEET_CSV_URL)
-  .then(r => r.text())
-  .then(t => {
-    const rows = t.split("\n").map(r => r.split(","));
-    const h = rows[0];
-    const d = rows.slice(1);
+.then(r => r.text())
+.then(t => {
+  const rows = t.split("\n").map(r => r.split(","));
+  const h = rows[0];
+  const d = rows.slice(1);
+  let html = "";
 
-    let html = "";
+  for (let i = 0; i < d.length; i++) {
+    if (!d[i][0]) continue;
+    html += `
+      <hr>
+      <p><b>ID SIMPAN:</b> ${d[i][h.indexOf("ID SIMPAN")]}</p>
+      <p><b>Nama Kapal:</b> ${d[i][h.indexOf("Nama Kapal (sesuai KTP)")]}</p>
+      <p><b>Desa:</b> ${d[i][h.indexOf("Desa")]}</p>
+      <p><b>Status:</b> ${d[i][h.indexOf("STATUS VERIFIKASI")]}</p>
+    `;
+  }
 
-    for (let i = 0; i < d.length; i++) {
-      if (!d[i][0]) continue;
-      html += `
-        <hr>
-        <p><b>ID SIMPAN:</b> ${d[i][h.indexOf("ID SIMPAN")]}</p>
-        <p><b>Nama Kapal:</b> ${d[i][h.indexOf("Nama Kapal (sesuai KTP)")
-]}</p>
-        <p><b>Desa:</b> ${d[i][h.indexOf("Desa")]}</p>
-        <p><b>Status:</b> ${d[i][h.indexOf("STATUS VERIFIKASI")]}</p>
-      `;
-    }
-
-    document.getElementById("data").innerHTML = html || "Data kosong";
-  });
+  document.getElementById("data").innerHTML = html || "Data kosong";
+});
 </script>
+
+</body>
+</html>
