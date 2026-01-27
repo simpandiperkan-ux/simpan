@@ -7,11 +7,11 @@
 
 <style>
 /* ===============================
-   TEMA RESMI PEMDA
+   SIMPAN FINAL OFFICIAL
 ================================ */
 body{
-  font-family: Arial, sans-serif;
-  background: linear-gradient(120deg, #dbeafe, #f8fafc);
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(120deg, #e2ebf7, #f8fafc);
   padding:20px;
 }
 
@@ -23,22 +23,22 @@ body{
   margin:auto;
   background:#fff;
   padding:32px;
-  border-radius:16px;
-  box-shadow:0 8px 30px rgba(0,0,0,.08);
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
   position:relative;
   overflow:hidden;
 }
 
 /* ===============================
-   WATERMARK PATTERN
+   WATERMARK PATTERN (LOCKED)
 ================================ */
 .box::before{
   content:"";
   position:absolute;
   inset:0;
   background:url("logo-simpan.png") repeat;
-  background-size:120px 120px;
-  opacity:0.035;
+  background-size:130px 130px;
+  opacity:0.03;
   pointer-events:none;
   z-index:0;
 }
@@ -52,13 +52,13 @@ body{
 }
 
 /* ===============================
-   HEADER (SIMETRIS)
+   HEADER (LOCKED SYMMETRY)
 ================================ */
 .header{
   display:grid;
   grid-template-columns:1fr auto 1fr;
   align-items:center;
-  margin-bottom:16px;
+  margin-bottom:14px;
 }
 
 .logo-left,
@@ -66,13 +66,12 @@ body{
   display:flex;
   align-items:center;
 }
-
 .logo-left{justify-content:flex-start}
 .logo-right{justify-content:flex-end}
 
 .logo-left img,
 .logo-right img{
-  height:70px;     /* SAMA PERSIS */
+  height:70px;
   width:auto;
 }
 
@@ -104,8 +103,8 @@ th{width:35%;background:#f1f5f9;font-weight:600}
    FOOTER
 ================================ */
 .footer{
-  margin-top:32px;
-  padding-top:12px;
+  margin-top:28px;
+  padding-top:10px;
   border-top:1px dashed #cbd5f5;
   font-size:12px;
   color:#475569;
@@ -114,13 +113,12 @@ th{width:35%;background:#f1f5f9;font-weight:600}
   flex-wrap:wrap;
 }
 
-@media(max-width:600px){
-  .header{
-    grid-template-columns:1fr;
-    gap:12px;
-    text-align:center;
-  }
-  .logo-left,.logo-right{justify-content:center}
+/* ===============================
+   PRINT MODE
+================================ */
+@media print{
+  body{background:#fff;padding:0}
+  .box{box-shadow:none;border-radius:0}
 }
 </style>
 </head>
@@ -132,10 +130,10 @@ th{width:35%;background:#f1f5f9;font-weight:600}
   <!-- HEADER -->
   <div class="header">
     <div class="logo-left">
-      <img src="logo-bateng.png" alt="Logo Bangka Tengah">
+      <img src="logo-bateng.png" alt="Logo Kabupaten Bangka Tengah">
     </div>
 
-    <div></div> <!-- spacer tengah -->
+    <div></div>
 
     <div class="logo-right">
       <img src="logo-simpan.png" alt="Logo SIMPAN">
