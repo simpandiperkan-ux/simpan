@@ -4,51 +4,83 @@
 <meta charset="UTF-8">
 <title>Data Kapal SIMPAN</title>
 <style>
-body{font-family:Arial;background:#f4f6f8;padding:20px}
-.box{max-width:700px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+body{
+  font-family:Arial;
+  background:#f4f6f8;
+  padding:20px;
+}
+.box{
+  max-width:700px;
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+}
+.label{font-weight:bold}
 hr{margin:15px 0}
 </style>
 </head>
 <body>
 
 <div class="box">
-<h2>📄 Data Kapal SIMPAN</h2>
-<div id="hasil">Memuat data...</div>
+  <h2>📄 Data Kapal SIMPAN</h2>
+  <div id="hasil">Memuat data...</div>
 </div>
 
 <script>
-const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=55347590&single=true&output=csv";
 
-const params = new URLSearchParams(window.location.search);
-const idCari = params.get("id");
+const urlParams = new URLSearchParams(window.location.search);
+const idCari = urlParams.get("id");
 
-fetch(urlCSV)
-.then(r => r.text())
-.then(text => {
-  const rows = text.trim().split("\n").map(r => r.split(","));
+fetch(CSV_URL)
+.then(res => res.text())
+.then(csv => {
+
+  const rows = csv.split("\n").map(r => r.split(","));
   const header = rows[0];
   const data = rows.slice(1);
 
-  const idxID = header.indexOf("ID SIMPAN");
-  const idxStatus = header.indexOf("STATUS VERIFIKASI");
-  const idxTglVerif = header.indexOf("TANGGAL VERIFIKASI");
-  const idxLink = header.indexOf("LINK HALAMAN KAPAL");
-  const idxUpdate = header.indexOf("TANGGAL UPDATE TERAKHIR");
+  const col = nama => header.indexOf(nama);
 
-  const row = data.find(r => r[idxID] === idCari);
+  const iID = col("ID SIMPAN");
+  const iStatus = col("STATUS VERIFIKASI");
+  const iTglVerif = col("TANGGAL VERIFIKASI");
+  const iLink = col("LINK HALAMAN KAPAL");
+  const iUpdate = col("UPDATE TERAKHIR");
+  const iQR = col("LINK QR");
+  const iNama = col("Nama Kapal");
+  const iDesa = col("Desa");
+  const iKec = col("Kecamatan");
 
-  if(!row){
-    document.getElementById("hasil").innerHTML = "<b>Data tidak ditemukan</b>";
-    return;
-  }
+  let ditemukan = false;
+  let html = "";
 
-  document.getElementById("hasil").innerHTML = `
-    <p><b>ID SIMPAN:</b> ${row[idxID]}</p>
-    <p><b>Status:</b> ${row[idxStatus]}</p>
-    <p><b>Tanggal Verifikasi:</b> ${row[idxTglVerif]}</p>
-    <p><b>Update Terakhir:</b> ${row[idxUpdate]}</p>
-    <p><b>Link Halaman:</b> <a href="${row[idxLink]}" target="_blank">${row[idxLink]}</a></p>
-  `;
+  data.forEach(r => {
+    if (r[iID] === idCari) {
+      ditemukan = true;
+      html = `
+        <p><span class="label">ID SIMPAN:</span> ${r[iID]}</p>
+        <p><span class="label">Nama Kapal:</span> ${r[iNama]}</p>
+        <p><span class="label">Desa:</span> ${r[iDesa]}</p>
+        <p><span class="label">Kecamatan:</span> ${r[iKec]}</p>
+        <hr>
+        <p><span class="label">Status Verifikasi:</span> ${r[iStatus]}</p>
+        <p><span class="label">Tanggal Verifikasi:</span> ${r[iTglVerif]}</p>
+        <p><span class="label">Update Terakhir:</span> ${r[iUpdate]}</p>
+        <p><span class="label">Link Halaman:</span> 
+          <a href="${r[iLink]}" target="_blank">Buka</a>
+        </p>
+        <p><span class="label">QR:</span><br>
+          <img src="${r[iQR]}" width="150">
+        </p>
+      `;
+    }
+  });
+
+  document.getElementById("hasil").innerHTML = 
+    ditemukan ? html : "❌ Data tidak ditemukan";
+
 });
 </script>
 
