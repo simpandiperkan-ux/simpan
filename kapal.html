@@ -2,78 +2,53 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>SIMPAN – Identitas Kapal Nelayan</title>
+<title>Data Kapal SIMPAN</title>
 <style>
 body{font-family:Arial;background:#f4f6f8;padding:20px}
-.card{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-h2{margin-top:0}
-img{max-width:100%;border-radius:6px;margin:6px 0}
-.label{font-weight:bold}
+.box{max-width:700px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+hr{margin:15px 0}
 </style>
 </head>
 <body>
 
-<h2>📋 Data Kapal SIMPAN</h2>
-<div id="data">Memuat data...</div>
+<div class="box">
+<h2>📄 Data Kapal SIMPAN</h2>
+<div id="hasil">Memuat data...</div>
+</div>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
+const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
 
-// ambil parameter id (opsional)
 const params = new URLSearchParams(window.location.search);
 const idCari = params.get("id");
 
-// ubah link drive ke link gambar
-function driveImg(url){
-  if(!url) return "";
-  const m = url.match(/id=([^&]+)/);
-  if(!m) return "";
-  return "https://drive.google.com/uc?export=view&id="+m[1];
-}
+fetch(urlCSV)
+.then(r => r.text())
+.then(text => {
+  const rows = text.trim().split("\n").map(r => r.split(","));
+  const header = rows[0];
+  const data = rows.slice(1);
 
-fetch(CSV_URL)
-.then(r=>r.text())
-.then(t=>{
-  const rows = t.split("\n").map(r=>r.split(","));
-  const h = rows[0];
-  const d = rows.slice(1);
+  const idxID = header.indexOf("ID SIMPAN");
+  const idxStatus = header.indexOf("STATUS VERIFIKASI");
+  const idxTglVerif = header.indexOf("TANGGAL VERIFIKASI");
+  const idxLink = header.indexOf("LINK HALAMAN KAPAL");
+  const idxUpdate = header.indexOf("TANGGAL UPDATE TERAKHIR");
 
-  const col = n => h.indexOf(n);
-  let html = "";
+  const row = data.find(r => r[idxID] === idCari);
 
-  d.forEach(r=>{
-    if(!r[col("ID SIMPAN")]) return;
-    if(idCari && r[col("ID SIMPAN")]!==idCari) return;
+  if(!row){
+    document.getElementById("hasil").innerHTML = "<b>Data tidak ditemukan</b>";
+    return;
+  }
 
-    html += `
-    <div class="card">
-      <p><span class="label">ID SIMPAN:</span> ${r[col("ID SIMPAN")]}</p>
-      <p><span class="label">Nama Kapal:</span> ${r[col("Nama Kapal")]}</p>
-      <p><span class="label">Desa:</span> ${r[col("Desa")]}</p>
-      <p><span class="label">Kecamatan:</span> ${r[col("Kecamatan")]}</p>
-      <p><span class="label">Status:</span> ${r[col("STATUS VERIFIKASI")]}</p>
-
-      <hr>
-
-      <p class="label">Foto KTP:</p>
-      <img src="${driveImg(r[col("Upload Foto KTP Elektronik")])}">
-
-      <p class="label">Foto Kapal:</p>
-      <img src="${driveImg(r[col("Foto Kapal Tampak Depan")])}">
-      <img src="${driveImg(r[col("Foto Kapal Tampak Samping Kiri")])}">
-      <img src="${driveImg(r[col("Foto Kapal Tampak Samping Kanan")])}">
-      <img src="${driveImg(r[col("Foto Kapal Tampak Belakang")])}">
-
-      <p class="label">Foto Mesin:</p>
-      <img src="${driveImg(r[col("Foto Mesin")])}">
-
-      <p class="label">Foto Alat Tangkap:</p>
-      <img src="${driveImg(r[col("Foto Alat Tangkap Utama")])}">
-    </div>
-    `;
-  });
-
-  document.getElementById("data").innerHTML = html || "Data tidak ditemukan";
+  document.getElementById("hasil").innerHTML = `
+    <p><b>ID SIMPAN:</b> ${row[idxID]}</p>
+    <p><b>Status:</b> ${row[idxStatus]}</p>
+    <p><b>Tanggal Verifikasi:</b> ${row[idxTglVerif]}</p>
+    <p><b>Update Terakhir:</b> ${row[idxUpdate]}</p>
+    <p><b>Link Halaman:</b> <a href="${row[idxLink]}" target="_blank">${row[idxLink]}</a></p>
+  `;
 });
 </script>
 
