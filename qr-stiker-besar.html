@@ -18,7 +18,7 @@ body{
   height:8cm;
   border:3px solid #000;
   box-sizing:border-box;
-  padding:6mm 6mm 8mm 6mm;
+  padding:6mm 6mm 10mm 6mm;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -28,8 +28,22 @@ body{
   overflow:hidden;
 }
 
-/* HEADER LOGO */
+/* ===== WATERMARK REPEAT ===== */
+.watermark{
+  position:absolute;
+  inset:0;
+  background-image:url("logo-simpan.png");
+  background-repeat:repeat;
+  background-size:80px 80px;
+  opacity:0.06;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* HEADER */
 .header{
+  position:relative;
+  z-index:2;
   height:16mm;
   display:flex;
   align-items:center;
@@ -39,18 +53,10 @@ body{
   height:14mm;
 }
 
-/* WATERMARK */
-.watermark{
-  position:absolute;
-  inset:0;
-  background:url("logo-simpan.png") center/120px no-repeat;
-  opacity:0.05;
-  pointer-events:none;
-}
-
 /* QR */
 .qr-wrap{
   position:relative;
+  z-index:2;
   margin-top:4mm;
   margin-bottom:3mm;
 }
@@ -61,7 +67,7 @@ body{
   background:#fff;
 }
 
-/* LOGO DI TENGAH QR */
+/* LOGO TENGAH QR */
 .qr-logo{
   position:absolute;
   top:50%;
@@ -80,11 +86,15 @@ body{
 
 /* TEXT */
 .id{
+  position:relative;
+  z-index:2;
   font-size:11pt;
   font-weight:bold;
   margin-top:2mm;
 }
 .note{
+  position:relative;
+  z-index:2;
   font-size:8pt;
   margin-top:1mm;
   letter-spacing:0.5px;
@@ -107,7 +117,7 @@ body{
 <div class="sticker">
   <div class="watermark"></div>
 
-  <!-- HEADER -->
+  <!-- HEADER LOGO BATENG -->
   <div class="header">
     <img src="logo-bateng.png" alt="Bangka Tengah">
   </div>
