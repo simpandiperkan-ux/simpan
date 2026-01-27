@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>QR Input Data Kapal SIMPAN</title>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -16,10 +16,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, sans-serif;
 }
 
-/* AREA STIKER */
+/* === STIKER === */
 #sticker {
   width: 8cm;
   height: 10cm;
@@ -28,7 +28,7 @@ body {
   margin-top: 30px;
   position: relative;
   text-align: center;
-  padding: 12px;
+  padding: 10px 10px 16px 10px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -49,39 +49,39 @@ body {
   z-index: 2;
 }
 
-/* logo atas */
 .logo {
-  width: 80px;
-  margin-bottom: 8px;
+  width: 75px;
+  margin-bottom: 6px;
 }
 
-/* QR */
 #qr {
-  display: inline-block;
-  margin: 10px 0 6px 0;
+  margin: 6px auto 6px auto;
+  width: 220px;
+  height: 220px;
 }
 
-/* teks bawah */
 .title {
-  font-weight: 800;
+  font-weight: 900;
   font-size: 16px;
   margin-top: 4px;
 }
 
 .subtitle {
   font-weight: bold;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
   margin-top: 2px;
-  margin-bottom: 6px;
 }
 
 /* tombol */
 .buttons {
-  margin: 25px 0;
+  margin: 20px;
+  display: flex;
+  gap: 10px;
 }
+
 button {
-  padding: 8px 16px;
-  margin: 4px;
+  padding: 10px 14px;
   font-size: 14px;
   cursor: pointer;
 }
@@ -92,17 +92,14 @@ button {
 
 <div id="sticker">
   <div class="content">
+    <img src="logo-bateng.png" class="logo">
 
-    <!-- LOGO PEMDA -->
-    <img src="logo-bateng.png" class="logo" />
-
-    <!-- QR -->
     <div id="qr"></div>
 
-    <!-- TEXT -->
     <div class="title">SIMPAN</div>
-    <div class="subtitle">Sistem Informasi Manajemen Pendataan Armada Nelayan</div>
-
+    <div class="subtitle">
+      Sistem Informasi Manajemen Pendataan Armada Nelayan
+    </div>
   </div>
 </div>
 
@@ -113,17 +110,23 @@ button {
 </div>
 
 <script>
+/* ==========================
+   QR PERMANEN (TIDAK BERUBAH)
+========================== */
 const url = "https://docs.google.com/forms/d/e/1FAIpQLScj55Oq0RiC8LkzTCO0HwzNGGNBTmeJVPKNO0Z1S3V9J29Wtw/viewform";
 
 new QRCode(document.getElementById("qr"), {
   text: url,
-  width: 250,
-  height: 250,
+  width: 220,
+  height: 220,
   correctLevel: QRCode.CorrectLevel.H
 });
 
+/* ==========================
+   DOWNLOAD FUNCTIONS
+========================== */
 function downloadPNG() {
-  html2canvas(document.getElementById("sticker")).then(canvas => {
+  html2canvas(document.getElementById("sticker"), {scale: 3}).then(canvas => {
     const link = document.createElement("a");
     link.download = "qr-input-simpan.png";
     link.href = canvas.toDataURL("image/png");
@@ -132,22 +135,27 @@ function downloadPNG() {
 }
 
 function downloadJPG() {
-  html2canvas(document.getElementById("sticker")).then(canvas => {
+  html2canvas(document.getElementById("sticker"), {scale: 3}).then(canvas => {
     const link = document.createElement("a");
     link.download = "qr-input-simpan.jpg";
-    link.href = canvas.toDataURL("image/jpeg", 0.95);
+    link.href = canvas.toDataURL("image/jpeg", 1.0);
     link.click();
   });
 }
 
-function downloadPDF() {
-  html2canvas(document.getElementById("sticker")).then(canvas => {
-    const imgData = canvas.toDataURL("image/png");
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "cm", [10, 8]);
-    pdf.addImage(imgData, "PNG", 0, 0, 8, 10);
-    pdf.save("qr-input-simpan.pdf");
+async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "cm",
+    format: [8, 10]
   });
+
+  const canvas = await html2canvas(document.getElementById("sticker"), {scale: 3});
+  const imgData = canvas.toDataURL("image/png");
+
+  pdf.addImage(imgData, "PNG", 0, 0, 8, 10);
+  pdf.save("qr-input-simpan.pdf");
 }
 </script>
 
