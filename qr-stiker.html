@@ -5,45 +5,95 @@
 <title>Stiker QR SIMPAN</title>
 
 <style>
-@page{size:5cm 5cm;margin:0}
-body{margin:0;font-family:Arial}
-.sticker{
-  width:5cm;height:5cm;
-  border:2px solid #000;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;padding:4mm;box-sizing:border-box
+/* ===========================
+   STIKER BESAR 8x8 CM
+=========================== */
+@page { size:8cm 8cm; margin:0 }
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
 }
-.logo{height:12mm;margin-bottom:2mm}
-.qr{width:32mm;height:32mm}
-.id{font-size:8pt;font-weight:bold;margin-top:2mm}
-.note{font-size:6pt}
+
+.sticker{
+  width:8cm;
+  height:8cm;
+  border:3px solid #000;
+  box-sizing:border-box;
+  padding:6mm;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  text-align:center;
+}
+
+/* LOGO */
+.logo{
+  height:14mm;
+}
+
+/* QR */
+.qr{
+  width:50mm;
+  height:50mm;
+  border:2px solid #000;
+}
+
+/* TEXT */
+.id{
+  font-size:11pt;
+  font-weight:bold;
+}
+
+.note{
+  font-size:8pt;
+  letter-spacing:0.5px;
+}
+
 @media screen{
-  body{display:flex;justify-content:center;align-items:center;height:100vh;background:#eee}
+  body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background:#f0f0f0;
+  }
 }
 </style>
 </head>
 
 <body>
+
 <div class="sticker">
-  <img src="logo-simpan.png" class="logo">
-  <img id="qr" class="qr">
-  <div class="id" id="id"></div>
+  <img src="logo-simpan.png" class="logo" alt="SIMPAN">
+  <img id="qr" class="qr" alt="QR">
+  <div class="id" id="idText"></div>
   <div class="note">SCAN UNTUK VERIFIKASI</div>
 </div>
 
 <script>
+/* ===========================
+   GENERATE QR RESMI
+=========================== */
 const id = new URLSearchParams(location.search).get("id");
-if(!id){document.body.innerHTML="ID tidak ditemukan";throw""}
 
-document.getElementById("id").innerText = id;
+if(!id){
+  document.body.innerHTML = "ID tidak ditemukan";
+  throw "";
+}
 
+document.getElementById("idText").innerText = id;
+
+/* LINK VERIFIKASI RESMI */
 const url =
- location.origin + "/simpan/kapal.html?id=" + id;
+  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
 
+/* QR GENERATOR */
 document.getElementById("qr").src =
- "https://chart.googleapis.com/chart?chs=600x600&cht=qr&chl=" +
- encodeURIComponent(url);
+  "https://chart.googleapis.com/chart?chs=800x800&cht=qr&chl=" +
+  encodeURIComponent(url);
 </script>
+
 </body>
 </html>
