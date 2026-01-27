@@ -10,7 +10,7 @@
 body{
   margin:0;
   font-family:Arial, Helvetica, sans-serif;
-  background:#0a4ea3; /* biru resmi */
+  background:#f0f0f0;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -21,12 +21,11 @@ body{
   position:relative;
   width:8cm;
   height:10cm;
-  border:3px solid #fff;
+  border:3px solid #000;
   box-sizing:border-box;
   padding:6mm;
-  background:#0a4ea3;
+  background:#fff;
   overflow:hidden;
-  color:#fff;
 }
 
 /* WATERMARK */
@@ -36,7 +35,7 @@ body{
   background-image:url("logo-simpan.png");
   background-repeat:repeat;
   background-size:90px 90px;
-  opacity:0.08;
+  opacity:0.07;
   z-index:0;
 }
 
@@ -47,25 +46,24 @@ body{
   justify-content:center;
   align-items:center;
   z-index:2;
+  position:relative;
 }
 .header img{ height:16mm }
 
 /* QR */
 .qr-wrap{
-  height:60mm;
+  margin-top:3mm;
+  height:55mm;
   display:flex;
   justify-content:center;
   align-items:center;
   z-index:2;
   background:#fff;
-  padding:6mm;
-  border-radius:6px;
+  padding:4mm;
 }
 .qr{
-  width:54mm;
-  height:54mm;
-  border:none;
-  background:#fff;
+  width:52mm;
+  height:52mm;
 }
 
 /* TEXT */
@@ -73,23 +71,25 @@ body{
   text-align:center;
   font-weight:bold;
   font-size:12pt;
-  margin-top:3mm;
+  margin-top:2mm;
   z-index:2;
   letter-spacing:0.5px;
 }
+
 .note{
   text-align:center;
-  font-size:11pt;
+  font-size:12pt;
   font-weight:bold;
-  margin-top:2mm;
-  letter-spacing:0.8px;
+  margin-top:1mm;
+  letter-spacing:1px;
   z-index:2;
 }
+
 .footer{
   text-align:center;
   font-size:7pt;
   margin-top:2mm;
-  opacity:0.9;
+  opacity:0.8;
 }
 </style>
 </head>
@@ -112,7 +112,8 @@ body{
 
   <div class="title">FORM INPUT DATA KAPAL</div>
   <div class="note">SCAN UNTUK INPUT DATA KAPAL</div>
-  <div class="footer">Sistem Informasi Manajemen Nelayan (SIMPAN)</div>
+  <div class="footer">Sistem Informasi Manajemen Pendataan Armada Nelayan (SIMPAN)</div>
+
 </div>
 
 </body>
