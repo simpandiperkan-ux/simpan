@@ -30,15 +30,17 @@ body{
 }
 
 /* ===============================
-   WATERMARK LOGO SIMPAN
+   WATERMARK PATTERN (PRO)
 ================================ */
 .box::before{
   content:"";
   position:absolute;
   inset:0;
-  background:url("logo-simpan.png") no-repeat center center;
-  background-size:60%;
-  opacity:0.06;
+  background-image: url("logo-simpan.png");
+  background-repeat: repeat;
+  background-size:120px 120px;   /* ukuran logo kecil */
+  background-position: center;
+  opacity:0.04;                  /* transparan halus */
   pointer-events:none;
   z-index:0;
 }
@@ -58,50 +60,43 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  flex-wrap:wrap;
+  margin-bottom:16px;
 }
-.logo-left img{height:70px}
-.logo-right img{height:55px}
+.logo-left img,
+.logo-right img{
+  height:70px;
+  width:auto;
+}
 
+/* ===============================
+   TITLE
+================================ */
 .title{
   text-align:center;
   font-size:22px;
   font-weight:bold;
-  margin:16px 0 4px;
+  margin:8px 0 4px;
   color:#0f172a;
 }
 .subtitle{
   text-align:center;
   font-size:14px;
   color:#475569;
-  margin-bottom:20px;
+  margin-bottom:24px;
 }
 
 /* ===============================
    TABLE
 ================================ */
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb}
 th{width:35%;background:#f1f5f9;font-weight:600}
-
-/* ===============================
-   BADGE
-================================ */
-.badge{
-  display:inline-block;
-  padding:4px 10px;
-  border-radius:999px;
-  background:#dcfce7;
-  color:#166534;
-  font-weight:bold;
-  font-size:12px;
-}
 
 /* ===============================
    FOOTER
 ================================ */
 .footer{
-  margin-top:30px;
+  margin-top:32px;
   padding-top:12px;
   border-top:1px dashed #cbd5f5;
   font-size:12px;
@@ -110,14 +105,9 @@ th{width:35%;background:#f1f5f9;font-weight:600}
   justify-content:space-between;
   flex-wrap:wrap;
 }
-.footer div{margin:4px 0}
 
-/* ===============================
-   PRINT
-================================ */
-@media print{
-  body{background:#fff}
-  .box{box-shadow:none}
+@media(max-width:600px){
+  .header{flex-direction:column;gap:12px}
 }
 </style>
 </head>
@@ -141,7 +131,6 @@ th{width:35%;background:#f1f5f9;font-weight:600}
 
   <div id="hasil">Memuat data...</div>
 
-  <!-- FOOTER -->
   <div class="footer">
     <div id="doc"></div>
     <div id="printTime"></div>
@@ -194,11 +183,8 @@ fetch(SHEET_JSON)
   html+="</table>";
   hasil.innerHTML=html;
 
-  // Footer
-  document.getElementById("doc").innerHTML=
-    "No Dokumen: SIMPAN-"+idCari;
-  document.getElementById("printTime").innerHTML=
-    "Dicetak: "+new Date().toLocaleString("id-ID");
+  document.getElementById("doc").innerHTML="No Dokumen: SIMPAN-"+idCari;
+  document.getElementById("printTime").innerHTML="Dicetak: "+new Date().toLocaleString("id-ID");
 });
 </script>
 
