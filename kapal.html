@@ -3,85 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <title>Data Kapal SIMPAN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{
-  font-family:Arial;
+  font-family: Arial, sans-serif;
   background:#f4f6f8;
   padding:20px;
 }
 .box{
-  max-width:700px;
+  max-width:720px;
   margin:auto;
   background:#fff;
   padding:20px;
-  border-radius:10px;
+  border-radius:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
+h2{text-align:center}
+.loading{color:#555;text-align:center}
+.error{color:red;text-align:center}
 .label{font-weight:bold}
 hr{margin:15px 0}
+img{border-radius:8px}
 </style>
 </head>
+
 <body>
 
 <div class="box">
   <h2>📄 Data Kapal SIMPAN</h2>
-  <div id="hasil">Memuat data...</div>
+  <div id="hasil" class="loading">Memuat data...</div>
 </div>
 
 <script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=55347590&single=true&output=csv";
+/* =============================
+   KONFIGURASI
+============================= */
+const JSON_URL =
+"https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
-const urlParams = new URLSearchParams(window.location.search);
-const idCari = urlParams.get("id");
+/* =============================
+   AMBIL ID DARI URL
+============================= */
+const idCari = new URLSearchParams(window.location.search).get("id");
+const hasil = document.getElementById("hasil");
 
-fetch(CSV_URL)
-.then(res => res.text())
-.then(csv => {
+if (!idCari) {
+  hasil.innerHTML = "<div class='error'>❌ ID tidak ditemukan di URL</div>";
+  throw new Error("ID kosong");
+}
 
-  const rows = csv.split("\n").map(r => r.split(","));
-  const header = rows[0];
-  const data = rows.slice(1);
+/* =============================
+   FETCH JSON
+============================= */
+fetch(JSON_URL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47, text.length - 2));
 
-  const col = nama => header.indexOf(nama);
+    const cols = json.table.cols.map(c => c.label);
+    const rows = json.table.rows.map(r => r.c.map(c => c?.v ?? ""));
 
-  const iID = col("ID SIMPAN");
-  const iStatus = col("STATUS VERIFIKASI");
-  const iTglVerif = col("TANGGAL VERIFIKASI");
-  const iLink = col("LINK HALAMAN KAPAL");
-  const iUpdate = col("UPDATE TERAKHIR");
-  const iQR = col("LINK QR");
-  const iNama = col("Nama Kapal");
-  const iDesa = col("Desa");
-  const iKec = col("Kecamatan");
+    const col = n => cols.indexOf(n);
 
-  let ditemukan = false;
-  let html = "";
+    const iID = col("ID SIMPAN");
+    const iNama = col("Nama Kapal");
+    const iDesa = col("Desa");
+    const iKec = col("Kecamatan");
+    const iStatus = col("STATUS VERIFIKASI");
+    const iTglVerif = col("TANGGAL VERIFIKASI");
+    const iUpdate = col("UPDATE TERAKHIR");
+    const iLink = col("LINK HALAMAN KAPAL");
+    const iQR = col("LINK QR");
 
-  data.forEach(r => {
-    if (r[iID] === idCari) {
-      ditemukan = true;
-      html = `
-        <p><span class="label">ID SIMPAN:</span> ${r[iID]}</p>
-        <p><span class="label">Nama Kapal:</span> ${r[iNama]}</p>
-        <p><span class="label">Desa:</span> ${r[iDesa]}</p>
-        <p><span class="label">Kecamatan:</span> ${r[iKec]}</p>
-        <hr>
-        <p><span class="label">Status Verifikasi:</span> ${r[iStatus]}</p>
-        <p><span class="label">Tanggal Verifikasi:</span> ${r[iTglVerif]}</p>
-        <p><span class="label">Update Terakhir:</span> ${r[iUpdate]}</p>
-        <p><span class="label">Link Halaman:</span> 
-          <a href="${r[iLink]}" target="_blank">Buka</a>
-        </p>
-        <p><span class="label">QR:</span><br>
-          <img src="${r[iQR]}" width="150">
-        </p>
-      `;
+    const row = rows.find(r => r[iID]?.toString().trim() === idCari);
+
+    if (!row) {
+      hasil.innerHTML = "<div class='error'>❌ Data tidak ditemukan</div>";
+      return;
     }
+
+    hasil.innerHTML = `
+      <p><span class="label">ID SIMPAN:</span> ${row[iID]}</p>
+      <p><span class="label">Nama Kapal:</span> ${row[iNama]}</p>
+      <p><span class="label">Desa:</span> ${row[iDesa]}</p>
+      <p><span class="label">Kecamatan:</span> ${row[iKec]}</p>
+      <hr>
+      <p><span class="label">Status Verifikasi:</span> ${row[iStatus]}</p>
+      <p><span class="label">Tanggal Verifikasi:</span> ${row[iTglVerif]}</p>
+      <p><span class="label">Update Terakhir:</span> ${row[iUpdate]}</p>
+      <p><span class="label">Link Halaman:</span>
+        <a href="${row[iLink]}" target="_blank">Buka</a>
+      </p>
+      <p><span class="label">QR:</span><br>
+        <img src="${row[iQR]}" width="160">
+      </p>
+    `;
+  })
+  .catch(err => {
+    console.error(err);
+    hasil.innerHTML = "<div class='error'>❌ Gagal memuat data (JSON / koneksi)</div>";
   });
-
-  document.getElementById("hasil").innerHTML = 
-    ditemukan ? html : "❌ Data tidak ditemukan";
-
-});
 </script>
 
 </body>
