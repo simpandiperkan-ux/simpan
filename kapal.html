@@ -3,85 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <title>SIMPAN – Identitas Kapal Nelayan</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body{font-family:Arial;background:#f2f5f7;margin:0;padding:15px}
-.card{max-width:700px;margin:auto;background:#fff;padding:15px;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+body{font-family:Arial;background:#f4f6f8;padding:20px}
+.card{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
 h2{margin-top:0}
-hr{margin:15px 0}
-img{width:100%;border-radius:8px;margin:5px 0}
+img{max-width:100%;border-radius:6px;margin:6px 0}
 .label{font-weight:bold}
-.status-ok{color:green;font-weight:bold}
-.status-pending{color:orange;font-weight:bold}
 </style>
 </head>
-
 <body>
-<div class="card">
-  <h2>SIMPAN</h2>
-  <div id="data">Memuat data kapal...</div>
-</div>
+
+<h2>📋 Data Kapal SIMPAN</h2>
+<div id="data">Memuat data...</div>
 
 <script>
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
-const params = new URLSearchParams(window.location.search);
-const idFilter = params.get("id");
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
 
-function parseCSV(text) {
-  return text.split("\n").map(r =>
-    r.match(/(".*?"|[^",]+)(?=,|$)/g)?.map(v => v.replace(/^"|"$/g, "").trim()) || []
-  );
+// ambil parameter id (opsional)
+const params = new URLSearchParams(window.location.search);
+const idCari = params.get("id");
+
+// ubah link drive ke link gambar
+function driveImg(url){
+  if(!url) return "";
+  const m = url.match(/id=([^&]+)/);
+  if(!m) return "";
+  return "https://drive.google.com/uc?export=view&id="+m[1];
 }
 
-fetch(SHEET_URL)
-.then(r => r.text())
-.then(text => {
-  const rows = parseCSV(text);
+fetch(CSV_URL)
+.then(r=>r.text())
+.then(t=>{
+  const rows = t.split("\n").map(r=>r.split(","));
   const h = rows[0];
   const d = rows.slice(1);
 
-  const c = n => h.indexOf(n);
+  const col = n => h.indexOf(n);
   let html = "";
 
-  d.forEach(r => {
-    const id = r[c("ID SIMPAN")];
-    if (!id) return;
-    if (idFilter && id !== idFilter) return;
-
-    const status = r[c("STATUS VERIFIKASI")];
+  d.forEach(r=>{
+    if(!r[col("ID SIMPAN")]) return;
+    if(idCari && r[col("ID SIMPAN")]!==idCari) return;
 
     html += `
-      <p><span class="label">ID SIMPAN:</span> ${id}</p>
-      <p><span class="label">Nama Kapal:</span> ${r[c("Nama Kapal")]}</p>
-      <p><span class="label">Desa:</span> ${r[c("Desa")]}</p>
-      <p><span class="label">Kecamatan:</span> ${r[c("Kecamatan")]}</p>
-      <p><span class="label">Alat Tangkap:</span> ${r[c("Alat Tangkap Utama")]}</p>
-      <p><span class="label">Jenis BBM:</span> ${r[c("Jenis BBM yang digunakan")]}</p>
-      <p><span class="label">Status:</span> 
-        <span class="${status=="TERVERIFIKASI"?"status-ok":"status-pending"}">${status}</span>
-      </p>
+    <div class="card">
+      <p><span class="label">ID SIMPAN:</span> ${r[col("ID SIMPAN")]}</p>
+      <p><span class="label">Nama Kapal:</span> ${r[col("Nama Kapal")]}</p>
+      <p><span class="label">Desa:</span> ${r[col("Desa")]}</p>
+      <p><span class="label">Kecamatan:</span> ${r[col("Kecamatan")]}</p>
+      <p><span class="label">Status:</span> ${r[col("STATUS VERIFIKASI")]}</p>
 
       <hr>
-      <h4>Foto Kapal</h4>
-      <img src="${r[c("Foto Kapal (Tampak Depan)")]}" />
-      <img src="${r[c("Foto Kapal (Tampak Sisi Kanan)")]}" />
-      <img src="${r[c("Foto Kapal (Tampak Sisi Kiri)")]}" />
-      <img src="${r[c("Foto Kapal (Tampak Belakang)")]}" />
 
-      <h4>Mesin & Alat Tangkap</h4>
-      <img src="${r[c("Foto Mesin Kapal")]}"/>
-      <img src="${r[c("Foto Alat Tangkap Utama")]}"/>
+      <p class="label">Foto KTP:</p>
+      <img src="${driveImg(r[col("Upload Foto KTP Elektronik")])}">
 
-      <h4>Dokumentasi Verifikasi</h4>
-      <img src="${r[c("Foto Pemilik Kapal Bersama Petugas di Atas Kapal")]}"/>
+      <p class="label">Foto Kapal:</p>
+      <img src="${driveImg(r[col("Foto Kapal Tampak Depan")])}">
+      <img src="${driveImg(r[col("Foto Kapal Tampak Samping Kiri")])}">
+      <img src="${driveImg(r[col("Foto Kapal Tampak Samping Kanan")])}">
+      <img src="${driveImg(r[col("Foto Kapal Tampak Belakang")])}">
 
-      <hr>
+      <p class="label">Foto Mesin:</p>
+      <img src="${driveImg(r[col("Foto Mesin")])}">
+
+      <p class="label">Foto Alat Tangkap:</p>
+      <img src="${driveImg(r[col("Foto Alat Tangkap Utama")])}">
+    </div>
     `;
   });
 
   document.getElementById("data").innerHTML = html || "Data tidak ditemukan";
 });
 </script>
+
 </body>
 </html>
