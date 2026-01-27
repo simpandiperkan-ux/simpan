@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>QR Input Data Kapal SIMPAN</title>
+
+<!-- LIBRARY DOWNLOAD -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+@page { size:8cm 10cm; margin:0 }
+
+body{
+  margin:0;
+  background:#eaeaea;
+  font-family:Arial, Helvetica, sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+}
+
+/* ===== STIKER ===== */
+.sticker{
+  position:relative;
+  width:8cm;
+  height:10cm;
+  border:3px solid #000;
+  background:#fff;
+  padding:6mm;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+
+/* MICROTEXT WATERMARK */
+.watermark{
+  position:absolute;
+  inset:0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(0,0,0,0.04),
+      rgba(0,0,0,0.04) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+  font-size:6pt;
+  color:rgba(0,0,0,0.08);
+  display:flex;
+  flex-wrap:wrap;
+  align-content:flex-start;
+  padding:5mm;
+  z-index:0;
+}
+.watermark span{
+  margin:2px 8px;
+  white-space:nowrap;
+}
+
+/* HEADER */
+.header{
+  height:18mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+  z-index:2;
+}
+.header img{
+  height:16mm;
+}
+
+/* QR */
+.qr-wrap{
+  margin-top:-2mm;
+  height:56mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+  z-index:2;
+}
+.qr{
+  width:52mm;
+  height:52mm;
+}
+
+/* TEXT */
+.text{
+  margin-top:3mm;
+  text-align:center;
+  z-index:2;
+}
+.text .title{
+  font-weight:900;
+  font-size:13pt;
+}
+.text .sub{
+  font-weight:900;
+  font-size:9pt;
+  margin-top:2mm;
+  line-height:1.2;
+}
+
+/* SERIAL */
+.serial{
+  position:absolute;
+  bottom:6mm;
+  left:0;
+  right:0;
+  text-align:center;
+  font-size:9pt;
+  font-weight:700;
+  letter-spacing:1px;
+  z-index:2;
+}
+
+/* BUTTONS */
+.buttons{
+  margin-top:20px;
+  display:flex;
+  gap:10px;
+}
+button{
+  padding:10px 16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="capture" class="sticker">
+
+  <div class="watermark" id="wm"></div>
+
+  <div class="header">
+    <img src="logo-bateng.png">
+  </div>
+
+  <div class="qr-wrap">
+    <img id="qr" class="qr">
+  </div>
+
+  <div class="text">
+    <div class="title">SIMPAN</div>
+    <div class="sub">Sistem Informasi Manajemen Pendataan Armada Nelayan</div>
+  </div>
+
+  <div class="serial" id="serial"></div>
+
+</div>
+
+<!-- DOWNLOAD BUTTONS -->
+<div class="buttons">
+  <button onclick="downloadPNG()">Download PNG</button>
+  <button onclick="downloadJPG()">Download JPG</button>
+  <button onclick="downloadPDF()">Download PDF</button>
+</div>
+
+<script>
+/* ===== SERIAL ===== */
+const id = new URLSearchParams(location.search).get("id") || "0001";
+const serial = "SMP-BT-2026-" + id.padStart(4,"0");
+document.getElementById("serial").innerText = serial;
+
+/* ===== WATERMARK MICROTEXT ===== */
+const wm = document.getElementById("wm");
+for(let i=0;i<80;i++){
+  const s=document.createElement("span");
+  s.innerText="SIMPAN • PEMDA BANGKA TENGAH • QR RESMI";
+  wm.appendChild(s);
+}
+
+/* ===== QR ===== */
+const url = "https://simpandiperkan-ux.github.io/simpan/input.html";
+document.getElementById("qr").src =
+  "https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data="+
+  encodeURIComponent(url);
+
+/* ===== DOWNLOAD ===== */
+function downloadPNG(){
+  html2canvas(document.getElementById("capture"),{scale:3}).then(c=>{
+    const a=document.createElement("a");
+    a.download=serial+".png";
+    a.href=c.toDataURL();
+    a.click();
+  });
+}
+function downloadJPG(){
+  html2canvas(document.getElementById("capture"),{scale:3}).then(c=>{
+    const a=document.createElement("a");
+    a.download=serial+".jpg";
+    a.href=c.toDataURL("image/jpeg",0.95);
+    a.click();
+  });
+}
+function downloadPDF(){
+  html2canvas(document.getElementById("capture"),{scale:3}).then(c=>{
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF("p","mm",[80,100]);
+    pdf.addImage(c.toDataURL("image/png"),"PNG",0,0,80,100);
+    pdf.save(serial+".pdf");
+  });
+}
+</script>
+
+</body>
+</html>
