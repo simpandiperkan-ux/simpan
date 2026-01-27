@@ -5,7 +5,7 @@
 <title>Stiker QR SIMPAN</title>
 
 <style>
-@page { size:8cm 8cm; margin:0 }
+@page { size:8cm 10cm; margin:0 }
 
 body{
   margin:0;
@@ -15,13 +15,10 @@ body{
 .sticker{
   position:relative;
   width:8cm;
-  height:8cm;
+  height:10cm;
   border:3px solid #000;
   box-sizing:border-box;
-  padding:6mm 6mm 6mm 6mm;
-  display:grid;
-  grid-template-rows:16mm auto 12mm 8mm;
-  text-align:center;
+  padding:6mm;
   background:#fff;
   overflow:hidden;
 }
@@ -39,26 +36,26 @@ body{
 
 /* HEADER */
 .header{
-  z-index:2;
+  height:18mm;
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
+  z-index:2;
 }
-.header img{
-  height:14mm;
-}
+.header img{ height:16mm }
 
 /* QR */
 .qr-wrap{
-  z-index:2;
+  height:60mm;
   display:flex;
   justify-content:center;
   align-items:center;
   position:relative;
+  z-index:2;
 }
 .qr{
-  width:48mm;
-  height:48mm;
+  width:52mm;
+  height:52mm;
   border:2px solid #000;
   background:#fff;
 }
@@ -66,11 +63,11 @@ body{
 /* LOGO TENGAH QR */
 .qr-logo{
   position:absolute;
-  width:12mm;
-  height:12mm;
+  width:14mm;
+  height:14mm;
   background:#fff;
-  border-radius:4px;
   padding:2px;
+  border-radius:4px;
 }
 .qr-logo img{
   width:100%;
@@ -79,14 +76,18 @@ body{
 
 /* TEXT */
 .id{
-  z-index:2;
-  font-size:11pt;
+  text-align:center;
   font-weight:bold;
+  font-size:12pt;
+  margin-top:2mm;
+  z-index:2;
 }
 .note{
-  z-index:2;
-  font-size:8pt;
+  text-align:center;
+  font-size:9pt;
+  margin-top:3mm;
   letter-spacing:0.5px;
+  z-index:2;
 }
 
 @media screen{
@@ -122,7 +123,7 @@ body{
   <!-- ID -->
   <div class="id" id="idText"></div>
 
-  <!-- NOTE (DIJAMIN MUNCUL) -->
+  <!-- NOTE -->
   <div class="note">SCAN UNTUK VERIFIKASI</div>
 </div>
 
@@ -138,7 +139,7 @@ const url =
   "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
 
 document.getElementById("qrImg").src =
-  "https://api.qrserver.com/v1/create-qr-code/?size=800x800&data=" +
+  "https://api.qrserver.com/v1/create-qr-code/?size=900x900&data=" +
   encodeURIComponent(url) +
   "&_=" + Date.now();
 </script>
