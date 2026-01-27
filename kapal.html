@@ -15,13 +15,40 @@ body{
   padding:20px;
 }
 
+/* ===============================
+   CONTAINER
+================================ */
 .box{
   max-width:900px;
   margin:auto;
   background:#fff;
-  padding:28px;
+  padding:32px;
   border-radius:16px;
   box-shadow:0 8px 30px rgba(0,0,0,.08);
+  position:relative;
+  overflow:hidden;
+}
+
+/* ===============================
+   WATERMARK LOGO SIMPAN
+================================ */
+.box::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:url("logo-simpan.png") no-repeat center center;
+  background-size:60%;
+  opacity:0.06;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ===============================
+   CONTENT LAYER
+================================ */
+.box > *{
+  position:relative;
+  z-index:1;
 }
 
 /* ===============================
@@ -29,67 +56,68 @@ body{
 ================================ */
 .header{
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  gap:10px;
-  margin-bottom:20px;
+  align-items:center;
   flex-wrap:wrap;
 }
-
-.logo-left img,
-.logo-center img{
-  height:70px;
-  width:auto;
-}
-
-.logo-center{
-  flex:1;
-  text-align:center;
-}
+.logo-left img{height:70px}
+.logo-right img{height:55px}
 
 .title{
   text-align:center;
-  margin-top:10px;
   font-size:22px;
   font-weight:bold;
+  margin:16px 0 4px;
   color:#0f172a;
+}
+.subtitle{
+  text-align:center;
+  font-size:14px;
+  color:#475569;
+  margin-bottom:20px;
 }
 
 /* ===============================
    TABLE
 ================================ */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th,td{
-  padding:12px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:left;
-  vertical-align:top;
-}
-th{
-  width:35%;
-  background:#f1f5f9;
-  font-weight:600;
-  color:#1e293b;
-}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+th{width:35%;background:#f1f5f9;font-weight:600}
 
-img{
-  max-width:160px;
-  border-radius:8px;
-}
-
-a{color:#1a73e8;text-decoration:none}
-
-.error{
-  text-align:center;
-  color:#b00020;
+/* ===============================
+   BADGE
+================================ */
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#dcfce7;
+  color:#166534;
   font-weight:bold;
+  font-size:12px;
 }
 
-@media(max-width:600px){
-  .header{flex-direction:column}
+/* ===============================
+   FOOTER
+================================ */
+.footer{
+  margin-top:30px;
+  padding-top:12px;
+  border-top:1px dashed #cbd5f5;
+  font-size:12px;
+  color:#475569;
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.footer div{margin:4px 0}
+
+/* ===============================
+   PRINT
+================================ */
+@media print{
+  body{background:#fff}
+  .box{box-shadow:none}
 }
 </style>
 </head>
@@ -98,32 +126,33 @@ a{color:#1a73e8;text-decoration:none}
 
 <div class="box">
 
-  <!-- HEADER LOGO -->
+  <!-- HEADER -->
   <div class="header">
     <div class="logo-left">
-      <img src="logo-bateng.png" alt="Logo Kabupaten Bangka Tengah">
+      <img src="logo-bateng.png" alt="Logo Bangka Tengah">
     </div>
-
-    <div class="logo-center">
+    <div class="logo-right">
       <img src="logo-simpan.png" alt="Logo SIMPAN">
     </div>
   </div>
 
-  <div class="title">Data Kapal SIMPAN</div>
+  <div class="title">DATA KAPAL SIMPAN</div>
+  <div class="subtitle">Sistem Informasi Manajemen Pendataan Armada Nelayan</div>
 
   <div id="hasil">Memuat data...</div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div id="doc"></div>
+    <div id="printTime"></div>
+  </div>
+
 </div>
 
 <script>
-/* ===============================
-   KONFIGURASI
-================================ */
 const SHEET_JSON =
 "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
-/* ===============================
-   KOLOM SENSITIF (DISEMBUNYIKAN)
-================================ */
 const HIDDEN_COLS = [
   "Nomor Induk Kependudukan (NIK)",
   "Upload Foto KTP Elektronik",
@@ -133,66 +162,44 @@ const HIDDEN_COLS = [
 const hasil = document.getElementById("hasil");
 const idCari = new URLSearchParams(location.search).get("id");
 
-/* ===============================
-   FORMAT NILAI
-================================ */
 function formatValue(label, val){
-  if (!val) return "-";
-
-  if (typeof val === "string" && val.startsWith("Date")) {
-    const m = val.match(/\d+/g).map(Number);
-    return new Date(m[0], m[1], m[2]).toLocaleDateString("id-ID");
+  if(!val) return "-";
+  if(typeof val==="string" && val.startsWith("Date")){
+    const m=val.match(/\d+/g).map(Number);
+    return new Date(m[0],m[1],m[2]).toLocaleDateString("id-ID");
   }
-
-  if (typeof val === "string" && val.startsWith("http")) {
+  if(typeof val==="string" && val.startsWith("http")){
     return `<a href="${val}" target="_blank">Buka</a>`;
   }
-
-  if (label.toLowerCase().includes("qr")) {
-    return `<img src="${val}">`;
-  }
-
   return val;
 }
 
-/* ===============================
-   FETCH & RENDER
-================================ */
 fetch(SHEET_JSON)
-  .then(r => r.text())
-  .then(text => {
-    const json = JSON.parse(text.substring(47, text.length - 2));
-    const headers = json.table.cols.map(c => c.label);
-    const rows = json.table.rows.map(r => r.c.map(c => c?.v ?? ""));
+.then(r=>r.text())
+.then(t=>{
+  const j=JSON.parse(t.substring(47,t.length-2));
+  const h=j.table.cols.map(c=>c.label);
+  const rows=j.table.rows.map(r=>r.c.map(c=>c?.v??""));
 
-    const idIndex = headers.indexOf("ID SIMPAN");
-    const row = rows.find(r => r[idIndex]?.toString().trim() === idCari);
+  const idx=h.indexOf("ID SIMPAN");
+  const row=rows.find(r=>r[idx]?.toString().trim()===idCari);
 
-    if (!row) {
-      hasil.innerHTML = "<div class='error'>❌ Data tidak ditemukan</div>";
-      return;
-    }
+  if(!row){hasil.innerHTML="Data tidak ditemukan";return;}
 
-    let html = "<table>";
-
-    headers.forEach((h, i) => {
-      if (HIDDEN_COLS.includes(h)) return;
-
-      html += `
-        <tr>
-          <th>${h}</th>
-          <td>${formatValue(h, row[i])}</td>
-        </tr>
-      `;
-    });
-
-    html += "</table>";
-    hasil.innerHTML = html;
-  })
-  .catch(err => {
-    console.error(err);
-    hasil.innerHTML = "<div class='error'>❌ Gagal memuat data</div>";
+  let html="<table>";
+  h.forEach((k,i)=>{
+    if(HIDDEN_COLS.includes(k)) return;
+    html+=`<tr><th>${k}</th><td>${formatValue(k,row[i])}</td></tr>`;
   });
+  html+="</table>";
+  hasil.innerHTML=html;
+
+  // Footer
+  document.getElementById("doc").innerHTML=
+    "No Dokumen: SIMPAN-"+idCari;
+  document.getElementById("printTime").innerHTML=
+    "Dicetak: "+new Date().toLocaleString("id-ID");
+});
 </script>
 
 </body>
