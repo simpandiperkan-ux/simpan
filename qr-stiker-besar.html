@@ -13,36 +13,80 @@ body{
 }
 
 .sticker{
+  position:relative;
   width:8cm;
   height:8cm;
   border:3px solid #000;
   box-sizing:border-box;
-  padding:6mm;
+  padding:6mm 6mm 8mm 6mm;
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
   text-align:center;
+  background:#fff;
+  overflow:hidden;
 }
 
-.logo{
+/* HEADER LOGO */
+.header{
+  height:16mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.header img{
   height:14mm;
 }
 
+/* WATERMARK */
+.watermark{
+  position:absolute;
+  inset:0;
+  background:url("logo-simpan.png") center/120px no-repeat;
+  opacity:0.05;
+  pointer-events:none;
+}
+
+/* QR */
+.qr-wrap{
+  position:relative;
+  margin-top:4mm;
+  margin-bottom:3mm;
+}
 .qr{
-  width:50mm;
-  height:50mm;
+  width:48mm;
+  height:48mm;
   border:2px solid #000;
   background:#fff;
 }
 
+/* LOGO DI TENGAH QR */
+.qr-logo{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:12mm;
+  height:12mm;
+  background:#fff;
+  border-radius:4px;
+  padding:2px;
+}
+.qr-logo img{
+  width:100%;
+  height:100%;
+}
+
+/* TEXT */
 .id{
   font-size:11pt;
   font-weight:bold;
+  margin-top:2mm;
 }
-
 .note{
   font-size:8pt;
+  margin-top:1mm;
   letter-spacing:0.5px;
 }
 
@@ -52,7 +96,7 @@ body{
     justify-content:center;
     align-items:center;
     height:100vh;
-    background:#f0f0f0;
+    background:#eee;
   }
 }
 </style>
@@ -61,36 +105,43 @@ body{
 <body>
 
 <div class="sticker">
-  <img src="logo-simpan.png" class="logo" alt="SIMPAN">
+  <div class="watermark"></div>
 
-  <img class="qr"
-       id="qrImg"
-       src=""
-       alt="QR Code">
+  <!-- HEADER -->
+  <div class="header">
+    <img src="logo-bateng.png" alt="Bangka Tengah">
+  </div>
+
+  <!-- QR -->
+  <div class="qr-wrap">
+    <img id="qrImg" class="qr" alt="QR Code">
+    <div class="qr-logo">
+      <img src="logo-simpan.png" alt="SIMPAN">
+    </div>
+  </div>
 
   <div class="id" id="idText"></div>
   <div class="note">SCAN UNTUK VERIFIKASI</div>
 </div>
 
 <script>
-/* ===== FINAL QR GENERATOR (ANTI CACHE) ===== */
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
-
+/* ===== GENERATE QR FINAL ===== */
+const id = new URLSearchParams(location.search).get("id");
 if(!id){
-  document.body.innerHTML = "ID tidak ditemukan";
+  document.body.innerHTML="ID tidak ditemukan";
   throw "";
 }
 
 document.getElementById("idText").innerText = id;
 
-const target =
+const url =
   "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
 
+/* QR STABIL */
 document.getElementById("qrImg").src =
   "https://api.qrserver.com/v1/create-qr-code/?size=800x800&data=" +
-  encodeURIComponent(target) +
-  "&_=" + Date.now(); // anti cache
+  encodeURIComponent(url) +
+  "&_=" + Date.now();
 </script>
 
 </body>
