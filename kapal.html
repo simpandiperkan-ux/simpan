@@ -19,29 +19,39 @@ hr{margin:15px 0}
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJD_-VoI2Bf3NDHY_x1eFO8vQgrmpw7L1VW_HczX9avlE5HVX2yN16nRQ8gq_UD0xp_wWfvk/pub?gid=972225342&single=true&output=csv";
 
+function parseCSV(text) {
+  return text.split("\n").map(row =>
+    row.match(/(".*?"|[^",]+)(?=,|$)/g)?.map(v => v.replace(/^"|"$/g, "")) || []
+  );
+}
+
 fetch(SHEET_CSV_URL)
 .then(r => r.text())
-.then(t => {
-  const rows = t.split("\n").map(r => r.match(/(".*?"|[^",]+)(?=,|$)/g));
-  const h = rows[0];
-  const d = rows.slice(1);
+.then(text => {
+  const rows = parseCSV(text);
+  const header = rows[0].map(h => h.trim());
+  const data = rows.slice(1);
+
+  const col = name => header.indexOf(name);
+
   let html = "";
 
-  for (let i = 0; i < d.length; i++) {
-    if (!d[i][0]) continue;
-    html += `
-  <hr>
-  <p><b>ID SIMPAN:</b> ${d[i][35]}</p>
-  <p><b>Nama Kapal:</b> ${d[i][6]}</p>
-  <p><b>Desa:</b> ${d[i][24]}</p>
-  <p><b>Status:</b> ${d[i][37]}</p>
-`;
+  data.forEach(row => {
+    if (!row[col("ID SIMPAN")]) return;
 
-  }
+    html += `
+      <hr>
+      <p><b>ID SIMPAN:</b> ${row[col("ID SIMPAN")]}</p>
+      <p><b>Nama Kapal:</b> ${row[col("Nama Kapal")]}</p>
+      <p><b>Desa:</b> ${row[col("Desa")]}</p>
+      <p><b>Status:</b> ${row[col("STATUS VERIFIKASI")]}</p>
+    `;
+  });
 
   document.getElementById("data").innerHTML = html || "Data kosong";
 });
 </script>
+
 
 </body>
 </html>
