@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>QR Input Data Kapal SIMPAN</title>
+
+<style>
+@page { size:8cm 10cm; margin:0 }
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#0a4ea3; /* biru resmi */
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.sticker{
+  position:relative;
+  width:8cm;
+  height:10cm;
+  border:3px solid #fff;
+  box-sizing:border-box;
+  padding:6mm;
+  background:#0a4ea3;
+  overflow:hidden;
+  color:#fff;
+}
+
+/* WATERMARK */
+.watermark{
+  position:absolute;
+  inset:0;
+  background-image:url("logo-simpan.png");
+  background-repeat:repeat;
+  background-size:90px 90px;
+  opacity:0.08;
+  z-index:0;
+}
+
+/* HEADER */
+.header{
+  height:18mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+}
+.header img{ height:16mm }
+
+/* QR */
+.qr-wrap{
+  height:60mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+  background:#fff;
+  padding:6mm;
+  border-radius:6px;
+}
+.qr{
+  width:54mm;
+  height:54mm;
+  border:none;
+  background:#fff;
+}
+
+/* TEXT */
+.title{
+  text-align:center;
+  font-weight:bold;
+  font-size:12pt;
+  margin-top:3mm;
+  z-index:2;
+  letter-spacing:0.5px;
+}
+.note{
+  text-align:center;
+  font-size:11pt;
+  font-weight:bold;
+  margin-top:2mm;
+  letter-spacing:0.8px;
+  z-index:2;
+}
+.footer{
+  text-align:center;
+  font-size:7pt;
+  margin-top:2mm;
+  opacity:0.9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sticker">
+  <div class="watermark"></div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <img src="logo-bateng.png" alt="Bangka Tengah">
+  </div>
+
+  <!-- QR -->
+  <div class="qr-wrap">
+    <img class="qr"
+      src="https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=https://simpandiperkan-ux.github.io/simpan/input.html">
+  </div>
+
+  <div class="title">FORM INPUT DATA KAPAL</div>
+  <div class="note">SCAN UNTUK INPUT DATA KAPAL</div>
+  <div class="footer">Sistem Informasi Manajemen Nelayan (SIMPAN)</div>
+</div>
+
+</body>
+</html>
