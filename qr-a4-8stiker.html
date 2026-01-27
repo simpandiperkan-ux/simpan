@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Cetak QR SIMPAN A4</title>
+
+<style>
+@page {
+  size:A4;
+  margin:1cm;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+.page{
+  display:grid;
+  grid-template-columns:repeat(2, 8cm);
+  grid-template-rows:repeat(4, 10cm);
+  gap:0.5cm;
+  justify-content:center;
+}
+
+.sticker{
+  position:relative;
+  width:8cm;
+  height:10cm;
+  border:2px solid #000;
+  padding:6mm;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+
+.watermark{
+  position:absolute;
+  inset:0;
+  background-image:url("logo-simpan.png");
+  background-repeat:repeat;
+  background-size:90px 90px;
+  opacity:0.06;
+  z-index:0;
+}
+
+.header{
+  height:18mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+}
+.header img{ height:16mm }
+
+.qr-wrap{
+  height:60mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+}
+
+.qr{
+  width:54mm;
+  height:54mm;
+}
+
+.id{
+  text-align:center;
+  font-weight:bold;
+  font-size:12pt;
+  margin-top:2mm;
+}
+
+.note{
+  text-align:center;
+  font-size:11pt;
+  font-weight:bold;
+  letter-spacing:0.8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="page" id="grid"></div>
+
+<script>
+/* ===== DAFTAR ID STIKER (EDIT SAJA INI) ===== */
+const ids = [
+  "BT-SMP-0001",
+  "BT-SMP-0002",
+  "BT-SMP-0003",
+  "BT-SMP-0004",
+  "BT-SMP-0005",
+  "BT-SMP-0006",
+  "BT-SMP-0007",
+  "BT-SMP-0008"
+];
+
+/* ===== GENERATE STIKER ===== */
+const grid = document.getElementById("grid");
+
+ids.forEach(id=>{
+  const url =
+    "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
+
+  const div = document.createElement("div");
+  div.className = "sticker";
+  div.innerHTML = `
+    <div class="watermark"></div>
+
+    <div class="header">
+      <img src="logo-bateng.png">
+    </div>
+
+    <div class="qr-wrap">
+      <img class="qr"
+        src="https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=${encodeURIComponent(url)}">
+    </div>
+
+    <div class="id">${id}</div>
+    <div class="note">SCAN UNTUK VERIFIKASI</div>
+  `;
+  grid.appendChild(div);
+});
+</script>
+
+</body>
+</html>
