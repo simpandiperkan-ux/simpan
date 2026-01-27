@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Cetak QR SIMPAN A4 (6 Stiker)</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+@page{
+  size:A4;
+  margin:1cm;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f0f0f0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.actions{
+  margin:15px;
+}
+button{
+  padding:8px 14px;
+  margin:4px;
+  border:none;
+  background:#0a4ea3;
+  color:#fff;
+  font-weight:bold;
+  border-radius:4px;
+  cursor:pointer;
+}
+button:hover{opacity:0.9}
+
+.page{
+  background:#fff;
+  padding:1cm;
+  display:grid;
+  grid-template-columns:repeat(2, 8cm);
+  grid-template-rows:repeat(3, 10cm);
+  gap:0.8cm;
+  justify-content:center;
+}
+
+.sticker{
+  position:relative;
+  width:8cm;
+  height:10cm;
+  border:2px solid #000;
+  padding:6mm;
+  box-sizing:border-box;
+  overflow:hidden;
+  background:#fff;
+}
+
+.watermark{
+  position:absolute;
+  inset:0;
+  background-image:url("logo-simpan.png");
+  background-repeat:repeat;
+  background-size:90px 90px;
+  opacity:0.06;
+  z-index:0;
+}
+
+.header{
+  height:18mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+}
+.header img{ height:16mm }
+
+.qr-wrap{
+  height:60mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2;
+}
+
+.qr{
+  width:54mm;
+  height:54mm;
+}
+
+.id{
+  text-align:center;
+  font-weight:bold;
+  font-size:12pt;
+  margin-top:2mm;
+  z-index:2;
+}
+
+.note{
+  text-align:center;
+  font-size:11pt;
+  font-weight:bold;
+  letter-spacing:0.8px;
+  z-index:2;
+}
+</style>
+</head>
+
+<body>
+
+<div class="actions">
+  <button onclick="downloadPNG()">Download PNG</button>
+  <button onclick="downloadJPG()">Download JPG</button>
+  <button onclick="downloadPDF()">Download PDF (A4)</button>
+</div>
+
+<div id="capture" class="page"></div>
+
+<script>
+/* ===== DAFTAR ID (EDIT SAJA INI) ===== */
+const ids = [
+  "BT-SMP-0001",
+  "BT-SMP-0002",
+  "BT-SMP-0003",
+  "BT-SMP-0004",
+  "BT-SMP-0005",
+  "BT-SMP-0006"
+];
+
+/* ===== GENERATE STIKER ===== */
+const grid = document.getElementById("capture");
+
+ids.forEach(id=>{
+  const url =
+    "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
+
+  const div = document.createElement("div");
+  div.className = "sticker";
+  div.innerHTML = `
+    <div class="watermark"></div>
+
+    <div class="header">
+      <img src="logo-bateng.png">
+    </div>
+
+    <div class="qr-wrap">
+      <img class="qr"
+        src="https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=${encodeURIComponent(url)}">
+    </div>
+
+    <div class="id">${id}</div>
+    <div class="note">SCAN UNTUK VERIFIKASI</div>
+  `;
+  grid.appendChild(div);
+});
+
+/* ===== DOWNLOAD ===== */
+function captureCanvas(){
+  return html2canvas(document.getElementById("capture"), {
+    scale:3,
+    useCORS:true
+  });
+}
+
+function downloadPNG(){
+  captureCanvas().then(c=>{
+    const a=document.createElement("a");
+    a.href=c.toDataURL("image/png");
+    a.download="QR-SIMPAN-A4.png";
+    a.click();
+  });
+}
+
+function downloadJPG(){
+  captureCanvas().then(c=>{
+    const a=document.createElement("a");
+    a.href=c.toDataURL("image/jpeg",0.95);
+    a.download="QR-SIMPAN-A4.jpg";
+    a.click();
+  });
+}
+
+async function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const c = await captureCanvas();
+  const pdf = new jsPDF({
+    orientation:"portrait",
+    unit:"cm",
+    format:"a4"
+  });
+  pdf.addImage(c.toDataURL("image/png"),"PNG",0,0,21,29.7);
+  pdf.save("QR-SIMPAN-A4.pdf");
+}
+</script>
+
+</body>
+</html>
