@@ -22,7 +22,7 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBI5O8DJ
 fetch(SHEET_CSV_URL)
 .then(r => r.text())
 .then(t => {
-  const rows = t.split("\n").map(r => r.split(","));
+  const rows = t.split("\n").map(r => r.match(/(".*?"|[^",]+)(?=,|$)/g));
   const h = rows[0];
   const d = rows.slice(1);
   let html = "";
@@ -30,12 +30,13 @@ fetch(SHEET_CSV_URL)
   for (let i = 0; i < d.length; i++) {
     if (!d[i][0]) continue;
     html += `
-      <hr>
-      <p><b>ID SIMPAN:</b> ${d[i][h.indexOf("ID SIMPAN")]}</p>
-      <p><b>Nama Kapal:</b> ${d[i][h.indexOf("Nama Kapal (sesuai KTP)")]}</p>
-      <p><b>Desa:</b> ${d[i][h.indexOf("Desa")]}</p>
-      <p><b>Status:</b> ${d[i][h.indexOf("STATUS VERIFIKASI")]}</p>
-    `;
+  <hr>
+  <p><b>ID SIMPAN:</b> ${d[i][35]}</p>
+  <p><b>Nama Kapal:</b> ${d[i][6]}</p>
+  <p><b>Desa:</b> ${d[i][24]}</p>
+  <p><b>Status:</b> ${d[i][37]}</p>
+`;
+
   }
 
   document.getElementById("data").innerHTML = html || "Data kosong";
