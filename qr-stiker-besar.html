@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Stiker QR SIMPAN</title>
+
+<style>
+/* ===========================
+   STIKER BESAR 8x8 CM
+=========================== */
+@page { size:8cm 8cm; margin:0 }
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+.sticker{
+  width:8cm;
+  height:8cm;
+  border:3px solid #000;
+  box-sizing:border-box;
+  padding:6mm;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  text-align:center;
+}
+
+/* LOGO */
+.logo{
+  height:14mm;
+}
+
+/* QR */
+.qr{
+  width:50mm;
+  height:50mm;
+  border:2px solid #000;
+}
+
+/* TEXT */
+.id{
+  font-size:11pt;
+  font-weight:bold;
+}
+
+.note{
+  font-size:8pt;
+  letter-spacing:0.5px;
+}
+
+@media screen{
+  body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background:#f0f0f0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sticker">
+  <img src="logo-simpan.png" class="logo" alt="SIMPAN">
+  <img id="qr" class="qr" alt="QR">
+  <div class="id" id="idText"></div>
+  <div class="note">SCAN UNTUK VERIFIKASI</div>
+</div>
+
+<script>
+/* ===========================
+   GENERATE QR RESMI
+=========================== */
+const id = new URLSearchParams(location.search).get("id");
+
+if(!id){
+  document.body.innerHTML = "ID tidak ditemukan";
+  throw "";
+}
+
+document.getElementById("idText").innerText = id;
+
+/* LINK VERIFIKASI RESMI */
+const url =
+  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
+
+/* QR GENERATOR */
+document.getElementById("qr").src =
+  "https://chart.googleapis.com/chart?chs=800x800&cht=qr&chl=" +
+  encodeURIComponent(url);
+</script>
+
+</body>
+</html>
