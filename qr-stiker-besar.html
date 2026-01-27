@@ -18,17 +18,15 @@ body{
   height:8cm;
   border:3px solid #000;
   box-sizing:border-box;
-  padding:6mm 6mm 10mm 6mm;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
+  padding:6mm 6mm 6mm 6mm;
+  display:grid;
+  grid-template-rows:16mm auto 12mm 8mm;
   text-align:center;
   background:#fff;
   overflow:hidden;
 }
 
-/* ===== WATERMARK REPEAT ===== */
+/* WATERMARK */
 .watermark{
   position:absolute;
   inset:0;
@@ -36,15 +34,12 @@ body{
   background-repeat:repeat;
   background-size:80px 80px;
   opacity:0.06;
-  pointer-events:none;
   z-index:0;
 }
 
 /* HEADER */
 .header{
-  position:relative;
   z-index:2;
-  height:16mm;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -55,10 +50,11 @@ body{
 
 /* QR */
 .qr-wrap{
-  position:relative;
   z-index:2;
-  margin-top:4mm;
-  margin-bottom:3mm;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
 }
 .qr{
   width:48mm;
@@ -70,9 +66,6 @@ body{
 /* LOGO TENGAH QR */
 .qr-logo{
   position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
   width:12mm;
   height:12mm;
   background:#fff;
@@ -86,17 +79,13 @@ body{
 
 /* TEXT */
 .id{
-  position:relative;
   z-index:2;
   font-size:11pt;
   font-weight:bold;
-  margin-top:2mm;
 }
 .note{
-  position:relative;
   z-index:2;
   font-size:8pt;
-  margin-top:1mm;
   letter-spacing:0.5px;
 }
 
@@ -117,7 +106,7 @@ body{
 <div class="sticker">
   <div class="watermark"></div>
 
-  <!-- HEADER LOGO BATENG -->
+  <!-- HEADER -->
   <div class="header">
     <img src="logo-bateng.png" alt="Bangka Tengah">
   </div>
@@ -130,24 +119,24 @@ body{
     </div>
   </div>
 
+  <!-- ID -->
   <div class="id" id="idText"></div>
+
+  <!-- NOTE (DIJAMIN MUNCUL) -->
   <div class="note">SCAN UNTUK VERIFIKASI</div>
 </div>
 
 <script>
-/* ===== GENERATE QR FINAL ===== */
 const id = new URLSearchParams(location.search).get("id");
 if(!id){
   document.body.innerHTML="ID tidak ditemukan";
   throw "";
 }
-
 document.getElementById("idText").innerText = id;
 
 const url =
   "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
 
-/* QR STABIL */
 document.getElementById("qrImg").src =
   "https://api.qrserver.com/v1/create-qr-code/?size=800x800&data=" +
   encodeURIComponent(url) +
