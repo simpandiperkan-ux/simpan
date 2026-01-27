@@ -3,142 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <title>Data Kapal SIMPAN</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{
-  font-family: "Segoe UI", Arial, sans-serif;
-  background:#f4f6f8;
-  padding:20px;
-}
-.box{
-  max-width:760px;
-  margin:auto;
-  background:#fff;
-  padding:24px;
-  border-radius:14px;
-  box-shadow:0 4px 20px rgba(0,0,0,.08);
-}
-h2{
-  text-align:center;
-  margin-bottom:10px;
-}
-.sub{
-  text-align:center;
-  color:#666;
-  margin-bottom:20px;
-}
-.row{margin:6px 0}
-.label{font-weight:600;color:#333}
-hr{margin:18px 0;border:none;border-top:1px solid #ddd}
-.loading{text-align:center;color:#555}
-.error{text-align:center;color:#b00020}
-.badge{
-  display:inline-block;
-  padding:4px 10px;
-  border-radius:12px;
-  font-size:12px;
-  font-weight:600;
-}
-.ok{background:#e6f4ea;color:#137333}
-.no{background:#fdecea;color:#b00020}
-img{border-radius:10px;margin-top:6px}
-a{color:#1a73e8;text-decoration:none}
-a:hover{text-decoration:underline}
+body{font-family:Arial;background:#f4f6f8;padding:20px}
+.box{max-width:900px;margin:auto;background:#fff;padding:24px;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+th{width:35%;background:#f1f3f4}
+img{max-width:160px;border-radius:8px}
 </style>
 </head>
-
 <body>
 
 <div class="box">
-  <h2>📄 Data Kapal SIMPAN</h2>
-  <div id="hasil" class="loading">Memuat data...</div>
+<h2>📄 Data Kapal SIMPAN</h2>
+<div id="hasil">Memuat...</div>
 </div>
 
 <script>
-/* ================================
-   KONFIGURASI
-================================ */
-const SHEET_JSON =
-"https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
+const URL="https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
+const id=new URLSearchParams(location.search).get("id");
+const hasil=document.getElementById("hasil");
 
-const hasil = document.getElementById("hasil");
-const idCari = new URLSearchParams(window.location.search).get("id");
-
-if (!idCari) {
-  hasil.innerHTML = "<div class='error'>❌ ID tidak ada di URL</div>";
-  throw new Error("ID kosong");
+function f(v){
+ if(!v) return "-";
+ if(typeof v==="string" && v.startsWith("Date")){
+  const m=v.match(/\d+/g).map(Number);
+  return new Date(m[0],m[1],m[2]).toLocaleDateString("id-ID");
+ }
+ if(v.startsWith?.("http")) return `<a href="${v}" target="_blank">Buka</a>`;
+ return v;
 }
 
-/* ================================
-   FORMAT TANGGAL
-================================ */
-function formatTanggal(val){
-  if (!val) return "-";
-  if (typeof val === "string" && val.startsWith("Date")) {
-    const m = val.match(/\d+/g).map(Number);
-    return new Date(m[0], m[1], m[2]).toLocaleDateString("id-ID");
-  }
-  return val;
-}
+fetch(URL).then(r=>r.text()).then(t=>{
+ const j=JSON.parse(t.substring(47,t.length-2));
+ const h=j.table.cols.map(c=>c.label);
+ const rows=j.table.rows.map(r=>r.c.map(c=>c?.v??""));
 
-/* ================================
-   FETCH DATA
-================================ */
-fetch(SHEET_JSON)
-  .then(r => r.text())
-  .then(text => {
-    const json = JSON.parse(text.substring(47, text.length - 2));
-    const cols = json.table.cols.map(c => c.label);
-    const rows = json.table.rows.map(r => r.c.map(c => c?.v ?? ""));
+ const idx=h.indexOf("ID SIMPAN");
+ const row=rows.find(r=>r[idx]==id);
 
-    const col = n => cols.indexOf(n);
+ if(!row){hasil.innerHTML="Data tidak ditemukan";return;}
 
-    const iID = col("ID SIMPAN");
-    const iNama = col("Nama Kapal");
-    const iDesa = col("Desa");
-    const iKec = col("Kecamatan");
-    const iStatus = col("STATUS VERIFIKASI");
-    const iTgl = col("TANGGAL VERIFIKASI");
-    const iUpdate = col("UPDATE TERAKHIR");
-    const iLink = col("LINK HALAMAN KAPAL");
-    const iQR = col("LINK QR");
-
-    const row = rows.find(r => r[iID]?.toString().trim() === idCari);
-
-    if (!row) {
-      hasil.innerHTML = "<div class='error'>❌ Data tidak ditemukan</div>";
-      return;
-    }
-
-    const statusBadge = row[iStatus] === "TERVERIFIKASI"
-      ? `<span class="badge ok">TERVERIFIKASI</span>`
-      : `<span class="badge no">BELUM</span>`;
-
-    hasil.innerHTML = `
-      <div class="row"><span class="label">ID SIMPAN:</span> ${row[iID]}</div>
-      <div class="row"><span class="label">Nama Kapal:</span> ${row[iNama]}</div>
-      <div class="row"><span class="label">Desa:</span> ${row[iDesa]}</div>
-      <div class="row"><span class="label">Kecamatan:</span> ${row[iKec]}</div>
-
-      <hr>
-
-      <div class="row"><span class="label">Status:</span> ${statusBadge}</div>
-      <div class="row"><span class="label">Tanggal Verifikasi:</span> ${formatTanggal(row[iTgl])}</div>
-      <div class="row"><span class="label">Update Terakhir:</span> ${formatTanggal(row[iUpdate])}</div>
-      <div class="row"><span class="label">Link Halaman:</span>
-        ${row[iLink] ? `<a href="${row[iLink]}" target="_blank">Buka</a>` : "-"}
-      </div>
-      <div class="row"><span class="label">QR:</span><br>
-        ${row[iQR] ? `<img src="${row[iQR]}" width="160">` : "-"}
-      </div>
-    `;
-  })
-  .catch(err => {
-    console.error(err);
-    hasil.innerHTML = "<div class='error'>❌ Gagal memuat data JSON</div>";
-  });
+ let html="<table>";
+ h.forEach((k,i)=>html+=`<tr><th>${k}</th><td>${f(row[i])}</td></tr>`);
+ html+="</table>";
+ hasil.innerHTML=html;
+});
 </script>
-
 </body>
 </html>
