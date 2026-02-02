@@ -33,7 +33,7 @@ body{
 /* ================= STIKER ================= */
 .sticker{
   width:8cm;
-  height:12cm;
+  height:13cm;                /* 🔥 FIX 13 CM */
   background:#fff;
   border:3px solid #000;
   position:relative;
@@ -51,7 +51,7 @@ body{
   background-repeat:repeat;
   background-size:140px auto;
   background-position:center;
-  opacity:0.18;           /* TERANG & AMAN */
+  opacity:0.18;
   pointer-events:none;
   z-index:0;
 }
@@ -74,11 +74,11 @@ body{
 
 /* ================= QR ================= */
 .qr-box{
-  margin:6px auto 4px;
+  margin:6px auto 6px;
 }
 .qr-box img{
-  width:230px;
-  height:230px;
+  width:240px;
+  height:240px;
 }
 
 /* ================= DATA ================= */
@@ -108,13 +108,14 @@ body{
 <body>
 
 <div class="actions">
-  <button onclick="downloadPNG()">Download PNG</button>
-  <button onclick="downloadJPG()">Download JPG</button>
-  <button onclick="downloadPDF()">Download PDF</button>
+  <button>Download PNG</button>
+  <button>Download JPG</button>
+  <button>Download PDF</button>
 </div>
 
 <div class="sticker" id="areaCetak">
   <img src="./logo-bateng.png" class="logo-bateng">
+
   <div class="title">
     DINAS PERIKANAN<br>
     KABUPATEN BANGKA TENGAH
@@ -201,11 +202,6 @@ fetch(SHEET_JSON)
   kapalEl.innerText="KAPAL : -";
 });
 }
-
-/* ================= DOWNLOAD ================= */
-function downloadPNG(){alert("Aktifkan library html2canvas bila diperlukan");}
-function downloadJPG(){alert("Aktifkan library html2canvas bila diperlukan");}
-function downloadPDF(){alert("Aktifkan library jsPDF bila diperlukan");}
 </script>
 
 </body>
