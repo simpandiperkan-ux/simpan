@@ -1,51 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>QR Stiker SIMPAN</title>
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  background:#f2f2f2;
+  font-family:Arial, Helvetica, sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ===== TOMBOL ===== */
+.actions{ margin-bottom:15px; }
+.actions button{
+  padding:8px 16px;
+  margin:4px;
+  border:none;
+  background:#0a4ea3;
+  color:#fff;
+  font-weight:bold;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+/* ===== STIKER ===== */
+.sticker{
+  width:8cm;
+  height:10cm;
+  background:#fff;
+  border:3px solid #000;
+  box-sizing:border-box;
+  padding:12px;
+  text-align:center;
+  position:relative;
+}
+
+/* ===== HEADER ===== */
+.logo{
+  width:70px;
+  margin-bottom:6px;
+}
+.header{
+  font-size:12px;
+  font-weight:bold;
+  line-height:1.3;
+  margin-bottom:6px;
+}
+
+/* ===== QR ===== */
+.qr-box{
+  position:relative;
+  margin:8px auto;
+  width:200px;
+  height:200px;
+}
+.qr-box img{
+  width:100%;
+  height:100%;
+}
+.watermark{
+  position:absolute;
+  inset:0;
+  background:url("logo-simpan.png") center/70% no-repeat;
+  opacity:0.07;
+  pointer-events:none;
+}
+
+/* ===== TEKS ===== */
+.id{ font-weight:bold; font-size:14px; margin-top:6px; }
+.info{ font-size:12px; margin-top:2px; }
+.note{ margin-top:6px; font-weight:bold; font-size:13px; }
+
+.footer{
+  position:absolute;
+  bottom:6px;
+  width:100%;
+  font-size:9px;
+  color:#555;
+}
+</style>
+</head>
+
 <body>
 
-<h3 id="idText"></h3>
-<p id="namaText"></p>
-<p id="kapalText"></p>
-<img id="qrImg" width="200">
-<p id="footerCetak"></p>
+<div class="actions">
+  <button>Download PNG</button>
+  <button>Download JPG</button>
+  <button>Download PDF</button>
+</div>
+
+<div class="sticker">
+  <img src="logo-bateng.png" class="logo">
+  <div class="header">
+    DINAS PERIKANAN<br>
+    KABUPATEN BANGKA TENGAH
+  </div>
+
+  <div class="qr-box">
+    <img id="qrImg">
+    <div class="watermark"></div>
+  </div>
+
+  <div id="idText" class="id">-</div>
+  <div id="namaText" class="info">NAMA : -</div>
+  <div id="kapalText" class="info">KAPAL : -</div>
+  <div class="note">SCAN UNTUK VERIFIKASI</div>
+
+  <div id="footerCetak" class="footer"></div>
+</div>
 
 <script>
+/* ========== KONFIG RESMI ========== */
 const SHEET_JSON =
 "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
 const DETAIL_URL =
 "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=";
 
-const up=v=>String(v||"").toUpperCase().trim();
-const idCari=new URLSearchParams(location.search).get("id");
+/* ========== UTIL ========== */
+const up = v => String(v || "").toUpperCase().trim();
 
-const qrImg=document.getElementById("qrImg");
-const idEl=document.getElementById("idText");
-const namaEl=document.getElementById("namaText");
-const kapalEl=document.getElementById("kapalText");
-const footer=document.getElementById("footerCetak");
+/* ========== PARAM ========== */
+const idCari = new URLSearchParams(location.search).get("id");
 
-idEl.innerText=idCari||"ID TIDAK ADA";
-footer.innerText="Dicetak: "+new Date().toLocaleDateString("id-ID");
+/* ========== DOM ========== */
+const qrImg   = document.getElementById("qrImg");
+const idEl    = document.getElementById("idText");
+const namaEl  = document.getElementById("namaText");
+const kapalEl = document.getElementById("kapalText");
+const footer  = document.getElementById("footerCetak");
 
-if(!idCari)return;
+/* ========== DEFAULT ========== */
+idEl.innerText = idCari ? up(idCari) : "ID SIMPAN TIDAK DITEMUKAN";
+footer.innerText = "Dicetak: " + new Date().toLocaleDateString("id-ID");
 
-qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+
-encodeURIComponent(DETAIL_URL+idCari);
+if (!idCari) return;
 
-fetch(SHEET_JSON).then(r=>r.text()).then(t=>{
-  const j=JSON.parse(t.substring(47,t.length-2));
-  const h=j.table.cols.map(c=>c.label);
-  const rows=j.table.rows.map(r=>r.c.map(c=>c?c.v:""));
+/* ========== QR ========== */
+qrImg.src =
+  "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data=" +
+  encodeURIComponent(DETAIL_URL + idCari);
 
-  const iID=h.indexOf("ID SIMPAN");
-  const iNama=h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
-  const iKapal=h.indexOf("Nama Kapal");
+/* ========== DATA SHEET ========== */
+fetch(SHEET_JSON)
+.then(r => r.text())
+.then(t => {
+  const json = JSON.parse(t.substring(47, t.length - 2));
+  const headers = json.table.cols.map(c => c.label);
+  const rows = json.table.rows.map(r =>
+    r.c.map(c => (c && c.v !== null ? c.v : ""))
+  );
 
-  const row=rows.find(r=>up(r[iID])===up(idCari));
-  if(!row)return;
+  const idxID    = headers.indexOf("ID SIMPAN");
+  const idxNama  = headers.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
+  const idxKapal = headers.indexOf("Nama Kapal");
 
-  namaEl.innerText="NAMA : "+row[iNama];
-  kapalEl.innerText="KAPAL : "+row[iKapal];
+  if (idxID === -1 || idxNama === -1 || idxKapal === -1) {
+    namaEl.innerText  = "NAMA : KOLOM RESMI TIDAK DITEMUKAN";
+    return;
+  }
+
+  const row = rows.find(r => up(r[idxID]) === up(idCari));
+
+  if (!row) {
+    namaEl.innerText  = "NAMA : DATA TIDAK DITEMUKAN";
+    return;
+  }
+
+  namaEl.innerText  = "NAMA : "  + up(row[idxNama]);
+  kapalEl.innerText = "KAPAL : " + up(row[idxKapal]);
+})
+.catch(() => {
+  namaEl.innerText = "NAMA : GAGAL MEMUAT DATA";
 });
 </script>
 
