@@ -64,6 +64,7 @@ body{
   border:none;
 }
 
+/* ===== TEXT AREA ===== */
 .id{
   text-align:center;
   font-weight:bold;
@@ -72,15 +73,23 @@ body{
   z-index:2;
 }
 
+.info{
+  text-align:center;
+  font-size:10.5pt;
+  margin-top:1mm;
+  z-index:2;
+}
+
 .note{
   text-align:center;
   font-size:11pt;
   font-weight:bold;
-  margin-top:1mm;
+  margin-top:2mm;
   letter-spacing:0.8px;
   z-index:2;
 }
 
+/* ===== BUTTON ===== */
 .actions{
   margin:15px 0;
 }
@@ -118,23 +127,44 @@ button:hover{opacity:0.9}
   </div>
 
   <div class="id" id="idText"></div>
+  <div class="info" id="namaText"></div>
+  <div class="info" id="kapalText"></div>
+
   <div class="note">SCAN UNTUK VERIFIKASI</div>
 </div>
 
 <script>
-const id = new URLSearchParams(location.search).get("id");
-if(!id){ alert("ID tidak ditemukan"); throw "";}
+/* ===== PARAM URL ===== */
+const params = new URLSearchParams(location.search);
+const id    = params.get("id");
+const nama  = params.get("nama");
+const kapal = params.get("kapal");
+
+if(!id){
+  alert("ID SIMPAN tidak ditemukan");
+  throw "";
+}
+
+/* ===== TAMPILKAN TEKS ===== */
 document.getElementById("idText").innerText = id;
 
-const url =
-  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + id;
+if(nama){
+  document.getElementById("namaText").innerText = "Nama : " + nama;
+}
+
+if(kapal){
+  document.getElementById("kapalText").innerText = "Kapal : " + kapal;
+}
+
+/* ===== QR CODE ===== */
+const targetURL =
+  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + encodeURIComponent(id);
 
 document.getElementById("qrImg").src =
   "https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=" +
-  encodeURIComponent(url);
+  encodeURIComponent(targetURL);
 
-/* ===== DOWNLOAD FUNCTIONS ===== */
-
+/* ===== CAPTURE ===== */
 function captureCanvas(){
   return html2canvas(document.getElementById("capture"), {
     scale:3,
@@ -142,6 +172,7 @@ function captureCanvas(){
   });
 }
 
+/* ===== DOWNLOAD ===== */
 function downloadPNG(){
   captureCanvas().then(c=>{
     const a=document.createElement("a");
