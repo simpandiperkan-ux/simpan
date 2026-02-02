@@ -1,87 +1,57 @@
 <script>
-/* ===== PARAM URL ===== */
+/* ===== PARAM ID ===== */
 const params = new URLSearchParams(location.search);
-const id = params.get("id");
+const idCari = params.get("id");
 
-if (!id) {
-  alert("ID SIMPAN tidak ditemukan");
+if (!idCari) {
+  document.body.innerHTML = "<h2>ID SIMPAN tidak ditemukan</h2>";
   throw "";
 }
 
-document.getElementById("idText").innerText = id;
+document.getElementById("idText").innerText = idCari;
 
-/* ===== LOAD DATA CSV OTOMATIS ===== */
-fetch("DATA_KAPAL.csv")
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.trim().split("\n");
-    const headers = rows[0].split(",");
+/* ===== GOOGLE SHEET SOURCE (SAMA) ===== */
+const SHEET_JSON =
+"https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
-    const idxId    = headers.indexOf("id");
-    const idxNama  = headers.indexOf("nama");
-    const idxKapal = headers.indexOf("kapal");
+/* ===== AMBIL DATA ===== */
+fetch(SHEET_JSON)
+  .then(r => r.text())
+  .then(t => {
+    const j = JSON.parse(t.substring(47, t.length - 2));
+    const headers = j.table.cols.map(c => c.label);
+    const rows = j.table.rows.map(r => r.c.map(c => c?.v ?? ""));
 
-    for (let i = 1; i < rows.length; i++) {
-      const cols = rows[i].split(",");
+    const idxID    = headers.indexOf("ID SIMPAN");
+    const idxNama  = headers.indexOf("Nama Lengkap");
+    const idxKapal = headers.indexOf("Nama Kapal");
 
-      if (cols[idxId] === id) {
-        document.getElementById("namaText").innerText =
-          "Nama : " + cols[idxNama];
+    const row = rows.find(r =>
+      r[idxID]?.toString().trim() === idCari
+    );
 
-        document.getElementById("kapalText").innerText =
-          "Kapal : " + cols[idxKapal];
-        break;
-      }
+    if (!row) {
+      document.getElementById("namaText").innerText = "Data tidak ditemukan";
+      return;
     }
+
+    document.getElementById("namaText").innerText =
+      "Nama : " + row[idxNama];
+
+    document.getElementById("kapalText").innerText =
+      "Kapal : " + row[idxKapal];
   })
   .catch(err => {
-    console.error("Gagal baca CSV", err);
+    console.error(err);
+    document.getElementById("namaText").innerText = "Gagal memuat data";
   });
 
 /* ===== QR CODE ===== */
 const targetURL =
-  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" + encodeURIComponent(id);
+  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" +
+  encodeURIComponent(idCari);
 
 document.getElementById("qrImg").src =
   "https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=" +
   encodeURIComponent(targetURL);
-
-/* ===== CAPTURE ===== */
-function captureCanvas(){
-  return html2canvas(document.getElementById("capture"), {
-    scale:3,
-    useCORS:true
-  });
-}
-
-/* ===== DOWNLOAD ===== */
-function downloadPNG(){
-  captureCanvas().then(c=>{
-    const a=document.createElement("a");
-    a.href=c.toDataURL("image/png");
-    a.download="QR-"+id+".png";
-    a.click();
-  });
-}
-
-function downloadJPG(){
-  captureCanvas().then(c=>{
-    const a=document.createElement("a");
-    a.href=c.toDataURL("image/jpeg",0.95);
-    a.download="QR-"+id+".jpg";
-    a.click();
-  });
-}
-
-async function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const c = await captureCanvas();
-  const pdf = new jsPDF({
-    orientation:"portrait",
-    unit:"cm",
-    format:[8,10]
-  });
-  pdf.addImage(c.toDataURL("image/png"),"PNG",0,0,8,10);
-  pdf.save("QR-"+id+".pdf");
-}
 </script>
