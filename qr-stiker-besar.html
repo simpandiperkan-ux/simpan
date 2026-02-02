@@ -1,57 +1,67 @@
 <script>
-/* ===== PARAM ID ===== */
-const params = new URLSearchParams(location.search);
-const idCari = params.get("id");
+document.addEventListener("DOMContentLoaded", () => {
 
-if (!idCari) {
-  document.body.innerHTML = "<h2>ID SIMPAN tidak ditemukan</h2>";
-  throw "";
-}
+  const params = new URLSearchParams(location.search);
+  const idCari = params.get("id");
 
-document.getElementById("idText").innerText = idCari;
+  // ===== AMAN: TAMPILKAN ID DULU =====
+  const idEl = document.getElementById("idText");
+  const namaEl = document.getElementById("namaText");
+  const kapalEl = document.getElementById("kapalText");
+  const qrImg = document.getElementById("qrImg");
 
-/* ===== GOOGLE SHEET SOURCE (SAMA) ===== */
-const SHEET_JSON =
-"https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
+  if (!idCari) {
+    idEl.innerText = "ID tidak ditemukan";
+    return;
+  }
 
-/* ===== AMBIL DATA ===== */
-fetch(SHEET_JSON)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(47, t.length - 2));
-    const headers = j.table.cols.map(c => c.label);
-    const rows = j.table.rows.map(r => r.c.map(c => c?.v ?? ""));
+  idEl.innerText = idCari;
 
-    const idxID    = headers.indexOf("ID SIMPAN");
-    const idxNama  = headers.indexOf("Nama Lengkap");
-    const idxKapal = headers.indexOf("Nama Kapal");
+  // ===== QR TETAP JALAN (APAPUN KONDISINYA) =====
+  const targetURL =
+    "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" +
+    encodeURIComponent(idCari);
 
-    const row = rows.find(r =>
-      r[idxID]?.toString().trim() === idCari
-    );
+  qrImg.src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=" +
+    encodeURIComponent(targetURL);
 
-    if (!row) {
-      document.getElementById("namaText").innerText = "Data tidak ditemukan";
-      return;
-    }
+  // ===== GOOGLE SHEET (SAMA DENGAN kapal.html) =====
+  const SHEET_JSON =
+    "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
-    document.getElementById("namaText").innerText =
-      "Nama : " + row[idxNama];
+  fetch(SHEET_JSON)
+    .then(r => r.text())
+    .then(t => {
+      const json = JSON.parse(t.substring(47, t.length - 2));
+      const headers = json.table.cols.map(c => c.label);
+      const rows = json.table.rows.map(r => r.c.map(c => c?.v ?? ""));
 
-    document.getElementById("kapalText").innerText =
-      "Kapal : " + row[idxKapal];
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("namaText").innerText = "Gagal memuat data";
-  });
+      const idxID = headers.indexOf("ID SIMPAN");
+      const idxNama = headers.indexOf("Nama Lengkap");
+      const idxKapal = headers.indexOf("Nama Kapal");
 
-/* ===== QR CODE ===== */
-const targetURL =
-  "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" +
-  encodeURIComponent(idCari);
+      if (idxID === -1) {
+        namaEl.innerText = "Kolom ID SIMPAN tidak ditemukan";
+        return;
+      }
 
-document.getElementById("qrImg").src =
-  "https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=" +
-  encodeURIComponent(targetURL);
+      const row = rows.find(r =>
+        r[idxID]?.toString().trim() === idCari
+      );
+
+      if (!row) {
+        namaEl.innerText = "Data tidak ditemukan";
+        return;
+      }
+
+      namaEl.innerText = "Nama : " + (row[idxNama] || "-");
+      kapalEl.innerText = "Kapal : " + (row[idxKapal] || "-");
+    })
+    .catch(err => {
+      console.error("Sheet error:", err);
+      namaEl.innerText = "Gagal memuat data";
+    });
+
+});
 </script>
