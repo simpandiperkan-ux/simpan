@@ -1,76 +1,53 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h3 id="idText"></h3>
+<p id="namaText"></p>
+<p id="kapalText"></p>
+<img id="qrImg" width="200">
+<p id="footerCetak"></p>
+
 <script>
-/* ================= KONFIG RESMI ================= */
 const SHEET_JSON =
 "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
 const DETAIL_URL =
 "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=";
 
-/* ================= UTIL ================= */
-const up = v => String(v || "").toUpperCase().trim();
+const up=v=>String(v||"").toUpperCase().trim();
+const idCari=new URLSearchParams(location.search).get("id");
 
-/* ================= PARAM ================= */
-const idCari = new URLSearchParams(window.location.search).get("id");
+const qrImg=document.getElementById("qrImg");
+const idEl=document.getElementById("idText");
+const namaEl=document.getElementById("namaText");
+const kapalEl=document.getElementById("kapalText");
+const footer=document.getElementById("footerCetak");
 
-/* ================= DOM ================= */
-const qrImg   = document.getElementById("qrImg");
-const idEl    = document.getElementById("idText");
-const namaEl  = document.getElementById("namaText");
-const kapalEl = document.getElementById("kapalText");
-const footer  = document.getElementById("footerCetak");
+idEl.innerText=idCari||"ID TIDAK ADA";
+footer.innerText="Dicetak: "+new Date().toLocaleDateString("id-ID");
 
-/* ================= DEFAULT ================= */
-idEl.innerText = idCari ? up(idCari) : "ID SIMPAN TIDAK DITEMUKAN";
-footer.innerText = "Dicetak: " + new Date().toLocaleDateString("id-ID");
+if(!idCari)return;
 
-/* ================= QR ================= */
-if (!idCari) {
-  namaEl.innerText  = "NAMA : -";
-  kapalEl.innerText = "KAPAL : -";
-  return;
-}
+qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+
+encodeURIComponent(DETAIL_URL+idCari);
 
-qrImg.src =
-  "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data=" +
-  encodeURIComponent(DETAIL_URL + idCari);
+fetch(SHEET_JSON).then(r=>r.text()).then(t=>{
+  const j=JSON.parse(t.substring(47,t.length-2));
+  const h=j.table.cols.map(c=>c.label);
+  const rows=j.table.rows.map(r=>r.c.map(c=>c?c.v:""));
 
-/* ================= AMBIL DATA SHEET ================= */
-fetch(SHEET_JSON)
-.then(r => r.text())
-.then(t => {
-  const json = JSON.parse(t.substring(47, t.length - 2));
-  const headers = json.table.cols.map(c => c.label);
-  const rows = json.table.rows.map(r =>
-    r.c.map(c => (c && c.v !== null ? c.v : ""))
-  );
+  const iID=h.indexOf("ID SIMPAN");
+  const iNama=h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
+  const iKapal=h.indexOf("Nama Kapal");
 
-  const idxID    = headers.indexOf("ID SIMPAN");
-  const idxNama  = headers.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
-  const idxKapal = headers.indexOf("Nama Kapal");
+  const row=rows.find(r=>up(r[iID])===up(idCari));
+  if(!row)return;
 
-  /* ===== VALIDASI KOLOM WAJIB ===== */
-  if (idxID === -1 || idxNama === -1 || idxKapal === -1) {
-    namaEl.innerText  = "NAMA : KOLOM RESMI TIDAK DITEMUKAN";
-    kapalEl.innerText = "KAPAL : -";
-    console.error("Kolom wajib tidak lengkap:", headers);
-    return;
-  }
-
-  const row = rows.find(r => up(r[idxID]) === up(idCari));
-
-  if (!row) {
-    namaEl.innerText  = "NAMA : DATA TIDAK DITEMUKAN";
-    kapalEl.innerText = "KAPAL : -";
-    return;
-  }
-
-  /* ===== ISI DATA (KOLOM RESMI) ===== */
-  namaEl.innerText  = "NAMA : "  + up(row[idxNama]);
-  kapalEl.innerText = "KAPAL : " + up(row[idxKapal]);
-})
-.catch(err => {
-  console.error("Gagal ambil Sheet:", err);
-  namaEl.innerText  = "NAMA : GAGAL MEMUAT DATA";
-  kapalEl.innerText = "KAPAL : -";
+  namaEl.innerText="NAMA : "+row[iNama];
+  kapalEl.innerText="KAPAL : "+row[iKapal];
 });
 </script>
+
+</body>
+</html>
