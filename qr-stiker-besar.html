@@ -1,197 +1,76 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>QR Stiker SIMPAN</title>
-
-<style>
-body{
-  margin:0;
-  padding:0;
-  background:#eee;
-  font-family:Arial, Helvetica, sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-
-/* ================= STIKER ================= */
-.sticker{
-  position:relative;
-  width:8cm;
-  height:10cm;
-  background:#fff;
-  border:3px solid #000;
-  box-sizing:border-box;
-  padding:10px;
-  text-align:center;
-  overflow:hidden;
-}
-
-/* ================= WATERMARK ================= */
-.watermark{
-  position:absolute;
-  top:50%;
-  left:50%;
-  width:180px;
-  height:180px;
-  transform:translate(-50%,-50%);
-  opacity:0.06;
-  z-index:1;
-  pointer-events:none;
-}
-.watermark img{
-  width:100%;
-}
-
-/* ================= KONTEN ================= */
-.content{
-  position:relative;
-  z-index:5; /* PALING ATAS */
-}
-
-/* ================= HEADER ================= */
-.logo{
-  width:80px;
-  margin:6px auto 4px;
-  display:block;
-}
-.instansi{
-  font-size:12px;
-  font-weight:700;
-  text-transform:uppercase;
-  margin-bottom:6px;
-}
-
-/* ================= QR ================= */
-.qr{
-  width:200px;
-  height:200px;
-  display:block;
-  margin:6px auto;
-}
-
-/* ================= TEXT ================= */
-.id{
-  font-weight:700;
-  margin-top:6px;
-}
-.info{
-  font-size:14px;
-  margin-top:2px;
-}
-.note{
-  margin-top:6px;
-  font-weight:800;
-}
-
-/* ================= FOOTER ================= */
-.footer{
-  position:absolute;
-  bottom:6px;
-  width:100%;
-  font-size:9px;
-  text-align:center;
-}
-</style>
-</head>
-
-<body>
-
-<div class="sticker">
-
-  <!-- WATERMARK -->
-  <div class="watermark">
-    <img src="logo-simpan.png">
-  </div>
-
-  <!-- KONTEN UTAMA -->
-  <div class="content">
-
-    <!-- LOGO ATAS -->
-    <img src="logo-bateng.png" class="logo">
-
-    <!-- TEKS DI BAWAH LOGO -->
-    <div class="instansi">
-      DINAS PERIKANAN<br>
-      KABUPATEN BANGKA TENGAH
-    </div>
-
-    <!-- QR -->
-    <img id="qrImg" class="qr">
-
-    <!-- DATA -->
-    <div id="idText" class="id"></div>
-    <div id="namaText" class="info"></div>
-    <div id="kapalText" class="info"></div>
-
-    <div class="note">SCAN UNTUK VERIFIKASI</div>
-
-    <div id="footerCetak" class="footer"></div>
-
-  </div>
-</div>
-
 <script>
-/* ===== KONFIG ===== */
+/* ================= KONFIG RESMI ================= */
 const SHEET_JSON =
 "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
 const DETAIL_URL =
 "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=";
 
-/* ===== UTIL ===== */
-const up = v => String(v||"").toUpperCase().trim();
+/* ================= UTIL ================= */
+const up = v => String(v || "").toUpperCase().trim();
 
-/* ===== PARAM ===== */
-const idCari = new URLSearchParams(location.search).get("id");
+/* ================= PARAM ================= */
+const idCari = new URLSearchParams(window.location.search).get("id");
 
-/* ===== DOM ===== */
+/* ================= DOM ================= */
 const qrImg   = document.getElementById("qrImg");
 const idEl    = document.getElementById("idText");
 const namaEl  = document.getElementById("namaText");
 const kapalEl = document.getElementById("kapalText");
 const footer  = document.getElementById("footerCetak");
 
-/* ===== ISI AWAL ===== */
+/* ================= DEFAULT ================= */
 idEl.innerText = idCari ? up(idCari) : "ID SIMPAN TIDAK DITEMUKAN";
 footer.innerText = "Dicetak: " + new Date().toLocaleDateString("id-ID");
 
-/* ===== QR ===== */
-if(idCari){
-  qrImg.src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data=" +
-    encodeURIComponent(DETAIL_URL + idCari);
-}else{
-  namaEl.innerText = "NAMA : -";
+/* ================= QR ================= */
+if (!idCari) {
+  namaEl.innerText  = "NAMA : -";
   kapalEl.innerText = "KAPAL : -";
   return;
 }
 
-/* ===== DATA ===== */
-fetch(SHEET_JSON)
-.then(r=>r.text())
-.then(t=>{
-  const j = JSON.parse(t.substring(47,t.length-2));
-  const h = j.table.cols.map(c=>c.label);
-  const rows = j.table.rows.map(r=>r.c.map(c=>c?.v??""));
+qrImg.src =
+  "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data=" +
+  encodeURIComponent(DETAIL_URL + idCari);
 
-  const idxID    = h.indexOf("ID SIMPAN");
-  const idxNama  = h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
-  const idxKapal = h.indexOf("Nama Kapal");
+/* ================= AMBIL DATA SHEET ================= */
+fetch(SHEET_JSON)
+.then(r => r.text())
+.then(t => {
+  const json = JSON.parse(t.substring(47, t.length - 2));
+  const headers = json.table.cols.map(c => c.label);
+  const rows = json.table.rows.map(r =>
+    r.c.map(c => (c && c.v !== null ? c.v : ""))
+  );
+
+  const idxID    = headers.indexOf("ID SIMPAN");
+  const idxNama  = headers.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
+  const idxKapal = headers.indexOf("Nama Kapal");
+
+  /* ===== VALIDASI KOLOM WAJIB ===== */
+  if (idxID === -1 || idxNama === -1 || idxKapal === -1) {
+    namaEl.innerText  = "NAMA : KOLOM RESMI TIDAK DITEMUKAN";
+    kapalEl.innerText = "KAPAL : -";
+    console.error("Kolom wajib tidak lengkap:", headers);
+    return;
+  }
 
   const row = rows.find(r => up(r[idxID]) === up(idCari));
 
-  if(!row){
+  if (!row) {
     namaEl.innerText  = "NAMA : DATA TIDAK DITEMUKAN";
     kapalEl.innerText = "KAPAL : -";
     return;
   }
 
-  namaEl.innerText  = "NAMA : "  + up(row[idxNama]||"-");
-  kapalEl.innerText = "KAPAL : " + up(row[idxKapal]||"-");
+  /* ===== ISI DATA (KOLOM RESMI) ===== */
+  namaEl.innerText  = "NAMA : "  + up(row[idxNama]);
+  kapalEl.innerText = "KAPAL : " + up(row[idxKapal]);
+})
+.catch(err => {
+  console.error("Gagal ambil Sheet:", err);
+  namaEl.innerText  = "NAMA : GAGAL MEMUAT DATA";
+  kapalEl.innerText = "KAPAL : -";
 });
 </script>
-
-</body>
-</html>
