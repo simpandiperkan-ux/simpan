@@ -5,7 +5,6 @@
 <title>QR Stiker SIMPAN</title>
 
 <style>
-/* ================== GLOBAL ================== */
 body{
   margin:0;
   padding:0;
@@ -16,10 +15,8 @@ body{
   align-items:center;
 }
 
-/* ================== ACTIONS ================== */
-.actions{
-  margin:15px;
-}
+/* ===== BUTTON ===== */
+.actions{ margin:15px }
 button{
   padding:8px 14px;
   margin:4px;
@@ -28,34 +25,39 @@ button{
   color:#fff;
   font-weight:bold;
   border-radius:4px;
-  cursor:pointer;
 }
 
-/* ================== STIKER ================== */
+/* ===== STIKER ===== */
 .sticker{
   position:relative;
   width:8cm;
   height:10cm;
   background:#fff;
   border:3px solid #000;
-  box-sizing:border-box;
   padding:10px;
+  box-sizing:border-box;
   text-align:center;
   overflow:hidden;
 }
 
-/* ================== WATERMARK ================== */
-.sticker::before{
-  content:"";
+/* ===== WATERMARK (SATU SAJA) ===== */
+.watermark{
   position:absolute;
   inset:0;
   background:url("logo-simpan.png") center no-repeat;
   background-size:180px;
   opacity:0.05;
+  z-index:1;
   pointer-events:none;
 }
 
-/* ================== HEADER ================== */
+/* ===== KONTEN ===== */
+.content{
+  position:relative;
+  z-index:2;
+}
+
+/* ===== HEADER ===== */
 .instansi{
   font-size:11px;
   font-weight:700;
@@ -68,13 +70,15 @@ button{
   margin-bottom:6px;
 }
 
-/* ================== QR ================== */
+/* ===== QR ===== */
 .qr{
   width:200px;
   height:200px;
+  display:block;
+  margin:0 auto;
 }
 
-/* ================== TEXT ================== */
+/* ===== TEXT ===== */
 .id{
   font-weight:700;
   margin-top:8px;
@@ -82,20 +86,17 @@ button{
 .info{
   font-size:14px;
   margin-top:2px;
-  word-break:break-word;
 }
 .note{
   margin-top:8px;
   font-weight:800;
-  letter-spacing:0.5px;
 }
 
-/* ================== FOOTER ================== */
-.footer-cetak{
+/* ===== FOOTER ===== */
+.footer{
   position:absolute;
   bottom:6px;
   width:100%;
-  text-align:center;
   font-size:9px;
 }
 </style>
@@ -111,105 +112,88 @@ button{
 
 <div class="sticker">
 
-  <div class="instansi">
-    DINAS PERIKANAN<br>
-    KABUPATEN BANGKA TENGAH
+  <!-- WATERMARK -->
+  <div class="watermark"></div>
+
+  <!-- KONTEN -->
+  <div class="content">
+
+    <div class="instansi">
+      DINAS PERIKANAN<br>
+      KABUPATEN BANGKA TENGAH
+    </div>
+
+    <img src="logo-bateng.png" class="logo">
+
+    <img id="qrImg" class="qr">
+
+    <div id="idText" class="id"></div>
+    <div id="namaText" class="info"></div>
+    <div id="kapalText" class="info"></div>
+
+    <div class="note">SCAN UNTUK VERIFIKASI</div>
+    <div id="footerCetak" class="footer"></div>
+
   </div>
-
-  <img src="logo-bateng.png" class="logo" alt="Logo Bateng">
-
-  <img id="qrImg" class="qr">
-
-  <div id="idText" class="id"></div>
-  <div id="namaText" class="info"></div>
-  <div id="kapalText" class="info"></div>
-
-  <div class="note">SCAN UNTUK VERIFIKASI</div>
-  <div id="footerCetak" class="footer-cetak"></div>
 </div>
 
 <script>
-/* ================== KONFIGURASI ================== */
+/* ===== KONFIG ===== */
 const SHEET_JSON =
 "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
 const DETAIL_URL =
 "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=";
 
-/* ================== UTIL ================== */
-const up = v => String(v || "").toUpperCase().trim();
-const fitFont = (el, max=14, min=10) => {
-  if(!el) return;
-  el.style.fontSize = max + "px";
-  while (el.scrollHeight > el.clientHeight && max > min){
-    max -= 1;
-    el.style.fontSize = max + "px";
-  }
-};
+/* ===== UTIL ===== */
+const up=v=>String(v||"").toUpperCase().trim();
 
-/* ================== PARAM ================== */
-const idCari = new URLSearchParams(location.search).get("id");
+/* ===== PARAM ===== */
+const idCari=new URLSearchParams(location.search).get("id");
 
-/* ================== DOM ================== */
-const idEl    = document.getElementById("idText");
-const namaEl  = document.getElementById("namaText");
-const kapalEl = document.getElementById("kapalText");
-const qrImg   = document.getElementById("qrImg");
-const footer  = document.getElementById("footerCetak");
+/* ===== DOM ===== */
+const qrImg=document.getElementById("qrImg");
+const idEl=document.getElementById("idText");
+const namaEl=document.getElementById("namaText");
+const kapalEl=document.getElementById("kapalText");
+const footer=document.getElementById("footerCetak");
 
-/* ================== ID ================== */
-idEl.innerText = idCari ? up(idCari) : "ID SIMPAN TIDAK DITEMUKAN";
+/* ===== ID ===== */
+idEl.innerText=idCari?up(idCari):"ID SIMPAN TIDAK DITEMUKAN";
 
-/* ================== QR ================== */
+/* ===== QR ===== */
 if(idCari){
-  qrImg.src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data=" +
-    encodeURIComponent(DETAIL_URL + idCari);
+  qrImg.src=
+   "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data="+
+   encodeURIComponent(DETAIL_URL+idCari);
 }
 
-/* ================== FOOTER ================== */
-footer.innerText =
-  "Dicetak: " + new Date().toLocaleDateString("id-ID");
+/* ===== FOOTER ===== */
+footer.innerText="Dicetak: "+new Date().toLocaleDateString("id-ID");
 
-/* ================== JIKA TANPA ID ================== */
-if(!idCari){
-  namaEl.innerText  = "NAMA : -";
-  kapalEl.innerText = "KAPAL : -";
-  return;
-}
+/* ===== DATA ===== */
+if(!idCari) return;
 
-/* ================== AMBIL DATA ================== */
 fetch(SHEET_JSON)
 .then(r=>r.text())
 .then(t=>{
-  const j = JSON.parse(t.substring(47,t.length-2));
-  const h = j.table.cols.map(c=>c.label);
-  const rows = j.table.rows.map(r=>r.c.map(c=>c?.v??""));
+  const j=JSON.parse(t.substring(47,t.length-2));
+  const h=j.table.cols.map(c=>c.label);
+  const rows=j.table.rows.map(r=>r.c.map(c=>c?.v??""));
 
-  const idxID    = h.indexOf("ID SIMPAN");
-  const idxNama  = h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
-  const idxKapal = h.indexOf("Nama Kapal");
+  const idxID=h.indexOf("ID SIMPAN");
+  const idxNama=h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
+  const idxKapal=h.indexOf("Nama Kapal");
 
-  const row = rows.find(r => up(r[idxID]) === up(idCari));
-
+  const row=rows.find(r=>up(r[idxID])===up(idCari));
   if(!row){
-    namaEl.innerText  = "NAMA : DATA TIDAK DITEMUKAN";
-    kapalEl.innerText = "KAPAL : -";
+    namaEl.innerText="NAMA : DATA TIDAK DITEMUKAN";
+    kapalEl.innerText="KAPAL : -";
     return;
   }
 
-  const nama  = idxNama  !== -1 ? up(row[idxNama])  : "-";
-  const kapal = idxKapal !== -1 ? up(row[idxKapal]) : "-";
-
-  namaEl.innerText  = "NAMA : "  + nama;
-  kapalEl.innerText = "KAPAL : " + kapal;
-
-  fitFont(namaEl,14,10);
-  fitFont(kapalEl,14,10);
-})
-.catch(()=>{
-  namaEl.innerText  = "NAMA : GAGAL MEMUAT DATA";
-  kapalEl.innerText = "KAPAL : -";
+  namaEl.innerText="NAMA : "+up(row[idxNama]||"-");
+  kapalEl.innerText="KAPAL : "+up(row[idxKapal]||"-");
 });
 </script>
 
