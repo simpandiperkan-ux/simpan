@@ -1,160 +1,42 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Stiker QR SIMPAN</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<style>
-@page { size:8cm 10cm; margin:0 }
-
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:#eee;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-
-.sticker{
-  position:relative;
-  width:8cm;
-  height:10cm;
-  border:3px solid #000;
-  box-sizing:border-box;
-  padding:6mm;
-  background:#fff;
-  overflow:hidden;
-  margin-top:10px;
-}
-
-.watermark{
-  position:absolute;
-  inset:0;
-  background-image:url("logo-simpan.png");
-  background-repeat:repeat;
-  background-size:90px 90px;
-  opacity:0.06;
-  z-index:0;
-}
-
-.header{
-  height:18mm;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:2;
-}
-.header img{ height:16mm }
-
-.qr-wrap{
-  height:60mm;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:2;
-}
-.qr{
-  width:54mm;
-  height:54mm;
-  background:#fff;
-  border:none;
-}
-
-/* ===== TEXT AREA ===== */
-.id{
-  text-align:center;
-  font-weight:bold;
-  font-size:12pt;
-  margin-top:2mm;
-  z-index:2;
-}
-
-.info{
-  text-align:center;
-  font-size:10.5pt;
-  margin-top:1mm;
-  z-index:2;
-}
-
-.note{
-  text-align:center;
-  font-size:11pt;
-  font-weight:bold;
-  margin-top:2mm;
-  letter-spacing:0.8px;
-  z-index:2;
-}
-
-/* ===== BUTTON ===== */
-.actions{
-  margin:15px 0;
-}
-button{
-  padding:8px 14px;
-  margin:4px;
-  border:none;
-  background:#0a4ea3;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-  border-radius:4px;
-}
-button:hover{opacity:0.9}
-</style>
-</head>
-
-<body>
-
-<div class="actions">
-  <button onclick="downloadPNG()">Download PNG</button>
-  <button onclick="downloadJPG()">Download JPG</button>
-  <button onclick="downloadPDF()">Download PDF</button>
-</div>
-
-<div id="capture" class="sticker">
-  <div class="watermark"></div>
-
-  <div class="header">
-    <img src="logo-bateng.png">
-  </div>
-
-  <div class="qr-wrap">
-    <img id="qrImg" class="qr">
-  </div>
-
-  <div class="id" id="idText"></div>
-  <div class="info" id="namaText"></div>
-  <div class="info" id="kapalText"></div>
-
-  <div class="note">SCAN UNTUK VERIFIKASI</div>
-</div>
-
 <script>
 /* ===== PARAM URL ===== */
 const params = new URLSearchParams(location.search);
-const id    = params.get("id");
-const nama  = params.get("nama");
-const kapal = params.get("kapal");
+const id = params.get("id");
 
-if(!id){
+if (!id) {
   alert("ID SIMPAN tidak ditemukan");
   throw "";
 }
 
-/* ===== TAMPILKAN TEKS ===== */
 document.getElementById("idText").innerText = id;
 
-if(nama){
-  document.getElementById("namaText").innerText = "Nama : " + nama;
-}
+/* ===== LOAD DATA CSV OTOMATIS ===== */
+fetch("DATA_KAPAL.csv")
+  .then(res => res.text())
+  .then(text => {
+    const rows = text.trim().split("\n");
+    const headers = rows[0].split(",");
 
-if(kapal){
-  document.getElementById("kapalText").innerText = "Kapal : " + kapal;
-}
+    const idxId    = headers.indexOf("id");
+    const idxNama  = headers.indexOf("nama");
+    const idxKapal = headers.indexOf("kapal");
+
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i].split(",");
+
+      if (cols[idxId] === id) {
+        document.getElementById("namaText").innerText =
+          "Nama : " + cols[idxNama];
+
+        document.getElementById("kapalText").innerText =
+          "Kapal : " + cols[idxKapal];
+        break;
+      }
+    }
+  })
+  .catch(err => {
+    console.error("Gagal baca CSV", err);
+  });
 
 /* ===== QR CODE ===== */
 const targetURL =
@@ -203,6 +85,3 @@ async function downloadPDF(){
   pdf.save("QR-"+id+".pdf");
 }
 </script>
-
-</body>
-</html>
