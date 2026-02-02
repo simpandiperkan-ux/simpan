@@ -4,195 +4,206 @@
 <meta charset="UTF-8">
 <title>QR Stiker SIMPAN</title>
 
+<!-- ===== LIBRARY ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
 body{
-  background:#f2f2f2;
+  margin:0;
+  padding:20px;
+  background:#eee;
   font-family:Arial, Helvetica, sans-serif;
   display:flex;
   flex-direction:column;
   align-items:center;
 }
 
-/* ===== BUTTON ===== */
-.actions{margin:18px}
+/* ===== TOMBOL ===== */
+.actions{
+  margin-bottom:15px;
+}
 .actions button{
-  padding:9px 16px;
-  margin:4px;
+  padding:8px 16px;
+  margin:0 4px;
   border:none;
   background:#0a4ea3;
   color:#fff;
   font-weight:bold;
-  border-radius:5px;
+  border-radius:6px;
   cursor:pointer;
 }
 
-/* ===== STIKER ===== */
-.sticker{
+/* ===== AREA CETAK ===== */
+#areaCetak{
   width:8cm;
   height:13cm;
   background:#fff;
   border:3px solid #000;
   position:relative;
-  overflow:hidden;
+  box-sizing:border-box;
+  padding:10px;
   text-align:center;
-  padding:10px 8px;
+  overflow:hidden;
 }
 
-/* ===== WATERMARK SIMPAN ===== */
-.sticker::before{
+/* ===== WATERMARK ===== */
+#areaCetak::before{
   content:"";
   position:absolute;
   inset:0;
-  background-image:url("./logo-simpan.png");
+  background-image:url("logo-simpan.png");
+  background-size:40%;
   background-repeat:repeat;
-  background-size:140px auto;
-  background-position:center;
-  opacity:0.18;
-  pointer-events:none;
+  opacity:0.08;
   z-index:0;
 }
-.sticker>*{position:relative;z-index:1}
 
-/* ===== HEADER ===== */
-.logo-bateng{width:62px;margin:2px auto 4px}
-.title{
-  font-size:11.5px;
-  font-weight:bold;
-  line-height:1.25;
-  margin-bottom:6px;
+/* ===== KONTEN ===== */
+.konten{
+  position:relative;
+  z-index:1;
 }
 
-/* ===== QR ===== */
-.qr-box{margin:6px auto}
-.qr-box img{width:240px;height:240px}
+.logo{
+  width:55px;
+  margin:5px auto;
+}
 
-/* ===== DATA ===== */
-.id{font-size:13px;font-weight:bold;margin-top:4px}
-.info{font-size:11.5px;margin-top:2px}
+.judul{
+  font-size:13px;
+  font-weight:bold;
+  margin:6px 0 10px;
+}
 
-/* ===== FOOTER ===== */
-.note{font-size:12px;font-weight:bold;margin-top:6px}
-.footer{font-size:9px;margin-top:3px}
+#qrImg{
+  width:230px;
+  height:230px;
+  margin:5px auto;
+}
+
+.id{
+  font-weight:bold;
+  margin-top:6px;
+}
+
+.info{
+  font-size:11px;
+}
+
+.scan{
+  margin-top:6px;
+  font-weight:bold;
+  font-size:12px;
+}
+
+.footer{
+  font-size:10px;
+  margin-top:4px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- ===== TOMBOL ===== -->
 <div class="actions">
   <button id="btnPNG">Download PNG</button>
   <button id="btnJPG">Download JPG</button>
   <button id="btnPDF">Download PDF</button>
 </div>
 
-<div class="sticker" id="areaCetak">
-  <img src="./logo-bateng.png" class="logo-bateng">
-  <div class="title">
-    DINAS PERIKANAN<br>
-    KABUPATEN BANGKA TENGAH
+<!-- ===== CETAK ===== -->
+<div id="areaCetak">
+  <div class="konten">
+    <img src="logo-bateng.png" class="logo">
+    <div class="judul">DINAS PERIKANAN<br>KABUPATEN BANGKA TENGAH</div>
+
+    <img id="qrImg" crossOrigin="anonymous">
+
+    <div id="idText" class="id"></div>
+    <div id="namaText" class="info"></div>
+    <div id="kapalText" class="info"></div>
+
+    <div class="scan">SCAN UNTUK VERIFIKASI</div>
+    <div id="tglCetak" class="footer"></div>
   </div>
-
-  <div class="qr-box">
-    <img id="qrImg">
-  </div>
-
-  <div id="idText" class="id"></div>
-  <div id="namaText" class="info"></div>
-  <div id="kapalText" class="info"></div>
-
-  <div class="note">SCAN UNTUK VERIFIKASI</div>
-  <div id="footerCetak" class="footer"></div>
 </div>
 
 <script>
-/* ===== KONFIG ===== */
+/* ================= KONFIG ================= */
 const SHEET_JSON =
 "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
+
 const DETAIL_URL =
 "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=";
 
-/* ===== UTIL ===== */
-const up=v=>String(v||"").toUpperCase().trim();
+/* ================= PARAM ================= */
+const idCari = new URLSearchParams(location.search).get("id");
 
-/* ===== PARAM ===== */
-const idCari=new URLSearchParams(location.search).get("id");
+/* ================= DOM ================= */
+const qrImg   = document.getElementById("qrImg");
+const idEl    = document.getElementById("idText");
+const namaEl  = document.getElementById("namaText");
+const kapalEl = document.getElementById("kapalText");
+const tglEl   = document.getElementById("tglCetak");
 
-/* ===== DOM ===== */
-const qrImg=document.getElementById("qrImg");
-const idEl=document.getElementById("idText");
-const namaEl=document.getElementById("namaText");
-const kapalEl=document.getElementById("kapalText");
-const footer=document.getElementById("footerCetak");
+/* ================= DEFAULT ================= */
+idEl.innerText = idCari || "-";
+tglEl.innerText = "Tanggal Cetak : " + new Date().toLocaleDateString("id-ID");
 
-/* ===== DEFAULT ===== */
-idEl.innerText=idCari?up(idCari):"ID SIMPAN TIDAK DITEMUKAN";
-footer.innerText="Tanggal Cetak : "+new Date().toLocaleDateString("id-ID");
-
-/* ===== QR ===== */
+/* ================= QR ================= */
 if(idCari){
-  qrImg.src=
-  "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data="+
-  encodeURIComponent(DETAIL_URL+idCari);
-}else{
-  namaEl.innerText="NAMA : -";
-  kapalEl.innerText="KAPAL : -";
+  qrImg.src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&data=" +
+    encodeURIComponent(DETAIL_URL + idCari);
 }
 
-/* ===== DATA SHEET ===== */
-if(idCari){
+/* ================= DATA SHEET ================= */
 fetch(SHEET_JSON)
 .then(r=>r.text())
 .then(t=>{
-  const j=JSON.parse(t.substring(47,t.length-2));
-  const h=j.table.cols.map(c=>c.label);
-  const rows=j.table.rows.map(r=>r.c.map(c=>c?.v??""));
+  const j = JSON.parse(t.substring(47, t.length-2));
+  const h = j.table.cols.map(c=>c.label);
+  const rows = j.table.rows.map(r=>r.c.map(c=>c?.v ?? ""));
 
-  const idxID=h.indexOf("ID SIMPAN");
-  const idxNama=h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
-  const idxKapal=h.indexOf("Nama Kapal");
+  const iID = h.indexOf("ID SIMPAN");
+  const iNama = h.indexOf("Nama Pemilik Kapal (Sesuai KTP)");
+  const iKapal = h.indexOf("Nama Kapal");
 
-  const row=rows.find(r=>up(r[idxID])===up(idCari));
-  if(!row){
-    namaEl.innerText="NAMA : DATA TIDAK DITEMUKAN";
-    kapalEl.innerText="KAPAL : -";
-    return;
+  const row = rows.find(r => String(r[iID]).trim() === idCari);
+  if(row){
+    namaEl.innerText  = "NAMA : " + row[iNama];
+    kapalEl.innerText = "KAPAL : " + row[iKapal];
   }
-  namaEl.innerText="NAMA : "+up(row[idxNama]);
-  kapalEl.innerText="KAPAL : "+up(row[idxKapal]);
 });
+
+/* ================= DOWNLOAD ================= */
+const area = document.getElementById("areaCetak");
+
+btnPNG.onclick = () => download("png");
+btnJPG.onclick = () => download("jpg");
+btnPDF.onclick = () => download("pdf");
+
+function download(type){
+  html2canvas(area,{
+    scale:3,
+    useCORS:true,
+    backgroundColor:"#ffffff"
+  }).then(canvas=>{
+    if(type==="pdf"){
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF("p","cm",[13,8]);
+      pdf.addImage(canvas,"PNG",0,0,8,13);
+      pdf.save("QR-"+idCari+".pdf");
+    }else{
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/"+type,0.95);
+      a.download = "QR-"+idCari+"."+type;
+      a.click();
+    }
+  });
 }
-</script>
-
-<!-- ===== LIBRARY DOWNLOAD ===== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script>
-const area=document.getElementById("areaCetak");
-
-/* PNG */
-btnPNG.onclick=()=>html2canvas(area,{scale:3}).then(c=>{
-  const a=document.createElement("a");
-  a.href=c.toDataURL("image/png");
-  a.download="QR-SIMPAN.png";
-  a.click();
-});
-
-/* JPG */
-btnJPG.onclick=()=>html2canvas(area,{scale:3,backgroundColor:"#fff"}).then(c=>{
-  const a=document.createElement("a");
-  a.href=c.toDataURL("image/jpeg",0.95);
-  a.download="QR-SIMPAN.jpg";
-  a.click();
-});
-
-/* PDF 8x13 cm */
-btnPDF.onclick=()=>html2canvas(area,{scale:3,backgroundColor:"#fff"}).then(c=>{
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF("p","cm",[13,8]);
-  pdf.addImage(c.toDataURL("image/png"),"PNG",0,0,8,13);
-  pdf.save("QR-SIMPAN.pdf");
-});
 </script>
 
 </body>
