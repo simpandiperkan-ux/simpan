@@ -1,24 +1,36 @@
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+(function () {
 
-  const params = new URLSearchParams(location.search);
-  const idCari = params.get("id");
+  // =========================
+  // AMAN: AMBIL ELEMEN DOM
+  // =========================
+  var idEl    = document.getElementById("idText");
+  var namaEl  = document.getElementById("namaText");
+  var kapalEl = document.getElementById("kapalText");
+  var qrImg   = document.getElementById("qrImg");
 
-  // ===== AMAN: TAMPILKAN ID DULU =====
-  const idEl = document.getElementById("idText");
-  const namaEl = document.getElementById("namaText");
-  const kapalEl = document.getElementById("kapalText");
-  const qrImg = document.getElementById("qrImg");
+  if (!idEl || !qrImg) {
+    console.error("Elemen HTML tidak ditemukan");
+    return;
+  }
+
+  // =========================
+  // AMBIL ID DARI URL
+  // =========================
+  var params = new URLSearchParams(window.location.search);
+  var idCari = params.get("id");
 
   if (!idCari) {
-    idEl.innerText = "ID tidak ditemukan";
+    idEl.innerText = "ID SIMPAN tidak ditemukan";
     return;
   }
 
   idEl.innerText = idCari;
 
-  // ===== QR TETAP JALAN (APAPUN KONDISINYA) =====
-  const targetURL =
+  // =========================
+  // QR CODE (SELALU JALAN)
+  // =========================
+  var targetURL =
     "https://simpandiperkan-ux.github.io/simpan/kapal.html?id=" +
     encodeURIComponent(idCari);
 
@@ -26,42 +38,66 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://api.qrserver.com/v1/create-qr-code/?size=1200x1200&margin=0&data=" +
     encodeURIComponent(targetURL);
 
-  // ===== GOOGLE SHEET (SAMA DENGAN kapal.html) =====
-  const SHEET_JSON =
+  // =========================
+  // GOOGLE SHEET (SUMBER DATA)
+  // =========================
+  var SHEET_JSON =
     "https://docs.google.com/spreadsheets/d/1G8fNMGPKo3QX8rm85ux8u8SC0m3SpwKMtzXWShOscZQ/gviz/tq?tqx=out:json";
 
+  // =========================
+  // AMBIL DATA (ANTI ERROR)
+  // =========================
   fetch(SHEET_JSON)
-    .then(r => r.text())
-    .then(t => {
-      const json = JSON.parse(t.substring(47, t.length - 2));
-      const headers = json.table.cols.map(c => c.label);
-      const rows = json.table.rows.map(r => r.c.map(c => c?.v ?? ""));
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
 
-      const idxID = headers.indexOf("ID SIMPAN");
-      const idxNama = headers.indexOf("Nama Lengkap");
-      const idxKapal = headers.indexOf("Nama Kapal");
+      if (!t || t.length < 50) {
+        throw "Data Sheet kosong";
+      }
+
+      var json = JSON.parse(t.substring(47, t.length - 2));
+      var cols = json.table.cols.map(function (c) { return c.label; });
+      var rows = json.table.rows.map(function (r) {
+        return r.c.map(function (c) { return c ? c.v : ""; });
+      });
+
+      var idxID    = cols.indexOf("ID SIMPAN");
+      var idxNama  = cols.indexOf("Nama Lengkap");
+      var idxKapal = cols.indexOf("Nama Kapal");
 
       if (idxID === -1) {
         namaEl.innerText = "Kolom ID SIMPAN tidak ditemukan";
         return;
       }
 
-      const row = rows.find(r =>
-        r[idxID]?.toString().trim() === idCari
-      );
+      var data = null;
+      for (var i = 0; i < rows.length; i++) {
+        if (String(rows[i][idxID]).trim() === idCari) {
+          data = rows[i];
+          break;
+        }
+      }
 
-      if (!row) {
+      if (!data) {
         namaEl.innerText = "Data tidak ditemukan";
         return;
       }
 
-      namaEl.innerText = "Nama : " + (row[idxNama] || "-");
-      kapalEl.innerText = "Kapal : " + (row[idxKapal] || "-");
+      if (namaEl) {
+        namaEl.innerText = "Nama : " + (data[idxNama] || "-");
+      }
+
+      if (kapalEl) {
+        kapalEl.innerText = "Kapal : " + (data[idxKapal] || "-");
+      }
+
     })
-    .catch(err => {
+    .catch(function (err) {
       console.error("Sheet error:", err);
-      namaEl.innerText = "Gagal memuat data";
+      if (namaEl) {
+        namaEl.innerText = "Gagal memuat data";
+      }
     });
 
-});
+})();
 </script>
